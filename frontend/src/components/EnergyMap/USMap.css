@@ -1,0 +1,6 @@
+/* Legend Position Style */
+#legend {
+  position:relative;
+  left:1em;
+  top:-25em;
+}

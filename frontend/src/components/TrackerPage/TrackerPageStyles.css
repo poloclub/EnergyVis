@@ -1,0 +1,13 @@
+.split-container {
+    display: flex;
+  }
+  
+#col-1 {
+    /* background-color: yellow; */
+    flex: 1;
+}
+
+#col-2 {
+    /* background-color: orange; */
+    flex: 1;
+}
