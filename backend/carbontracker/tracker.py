@@ -6,6 +6,7 @@ import psutil
 import math
 from threading import Thread, Event
 from flask import jsonify
+from flask_cors import CORS
 
 import numpy as np
 
@@ -177,6 +178,7 @@ class FlaskServerThread(Thread):
         
     def run(self):
         app = Flask(__name__)
+        CORS(app)
         @app.route("/")
         def main():
             return "EnergyVis backend is tracking..."
@@ -184,7 +186,7 @@ class FlaskServerThread(Thread):
         @app.route("/pause")
         def pause():
             self.training_paused = not self.training_paused
-            return {"training_stats": self.training_paused}
+            return {"training_paused": self.training_paused}
         
         @app.route("/energy-stats")
         def get_energy_statistics():
