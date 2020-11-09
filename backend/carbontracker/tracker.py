@@ -5,6 +5,7 @@ import traceback
 import psutil
 import math
 from threading import Thread, Event
+from flask import jsonify
 
 import numpy as np
 
@@ -24,6 +25,7 @@ class CarbonTrackerThread(Thread):
                  logger,
                  ignore_errors,
                  delete,
+                 flask_server,
                  update_interval=10):
         super(CarbonTrackerThread, self).__init__()
         self.name = "CarbonTrackerThread"
@@ -32,6 +34,7 @@ class CarbonTrackerThread(Thread):
         self.update_interval = update_interval
         self.ignore_errors = ignore_errors
         self.logger = logger
+        self.flask_server = flask_server
         self.epoch_times = []
         self.running = True
         self.measuring = False
@@ -45,6 +48,7 @@ class CarbonTrackerThread(Thread):
         try:
             self.begin()
             while self.running:
+                self.component_energy_per_epoch()
                 if not self.measuring:
                     continue
                 self._collect_measurements()
@@ -140,7 +144,14 @@ class CarbonTrackerThread(Thread):
             energy_usage = comp.energy_usage(self.epoch_times)
             total_energy += energy_usage
         return total_energy
-
+    
+    def component_energy_per_epoch(self):
+        energy_names = {}
+        for comp in self.components:
+            energy_names[comp.name] = comp.energy_usage(self.epoch_times, expanded_interval=self.update_interval)
+        self.flask_server.energy_stats = energy_names
+        return energy_names
+    
     def _handle_error(self, error):
         err_str = traceback.format_exc()
         if self.ignore_errors:
@@ -161,19 +172,23 @@ class FlaskServerThread(Thread):
     def __init__(self):
         super(FlaskServerThread, self).__init__()
         self.training_paused = False
+        self.energy_stats = None
         self.start()
         
     def run(self):
         app = Flask(__name__)
-        print("STARTING SERVER")
         @app.route("/")
         def main():
-            return "Hello"
+            return "EnergyVis backend is tracking..."
         
         @app.route("/pause")
         def pause():
             self.training_paused = not self.training_paused
-            return str(self.training_paused)
+            return {"training_stats": self.training_paused}
+        
+        @app.route("/energy-stats")
+        def get_energy_statistics():
+            return self.energy_stats
         
         app.run()
 
@@ -206,7 +221,7 @@ class CarbonTracker:
         self.decimal_precision = decimal_precision
         self.deleted = False
         self.flask_server = FlaskServerThread()
-
+        
         try:
             pids = self._get_pids()
             self.logger = loggerutil.Logger(log_dir=log_dir, verbose=verbose)
@@ -218,11 +233,14 @@ class CarbonTracker:
                     devices_by_pid=devices_by_pid),
                 logger=self.logger,
                 ignore_errors=ignore_errors,
-                update_interval=update_interval)
+                flask_server=self.flask_server,
+                update_interval=update_interval,
+            )
 
         except Exception as e:
             self._handle_error(e)
             
+
     def epoch_start(self):
         if self.deleted:
             return
@@ -245,7 +263,7 @@ class CarbonTracker:
 
             if self.epoch_counter == self.monitor_epochs:
                 self._output_actual()
-
+                            
             if self.epoch_counter == self.epochs_before_pred:
                 self._output_pred()
                 if self.stop_and_confirm:

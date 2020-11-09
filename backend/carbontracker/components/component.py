@@ -40,6 +40,7 @@ class Component:
         self._handler = self._determine_handler(pids=pids,
                                                 devices_by_pid=devices_by_pid)
         self.power_usages = []
+        self.interval_power_usages = []
         self.cur_epoch = -1  # Sentry
 
     @property
@@ -79,12 +80,20 @@ class Component:
                         -1] if self.power_usages else []
                     self.power_usages.append(latest_measurements)
             self.power_usages.append([])
+        curr_power_usage = self.handler.power_usage()
+        self.power_usages[-1].append(curr_power_usage)
+        self.interval_power_usages.append(curr_power_usage)
 
-        self.power_usages[-1].append(self.handler.power_usage())
-
-    def energy_usage(self, epoch_times):
+    def energy_usage(self, epoch_times, expanded_interval=None):
         """Returns energy (kWh) used by component per epoch."""
         energy_usages = []
+        all_expanded = None
+  
+        if expanded_interval and len(self.interval_power_usages) > 0:
+            all_expanded = np.sum(self.interval_power_usages, axis=1) * expanded_interval
+            all_expanded /= 3600000
+            all_expanded = all_expanded.tolist()
+            
         # We have to compute each epoch in a for loop since numpy cannot
         # handle lists of uneven length.
         for idx, (power, time) in enumerate(zip(self.power_usages,
@@ -96,8 +105,11 @@ class Component:
                 power = self.power_usages[idx]
             if not power:
                 power = [[0]]
+                            
             avg_power_usage = np.mean(power, axis=0)
-            energy_usage = np.multiply(avg_power_usage, time).sum()
+            energy_usage = np.multiply(avg_power_usage, time)
+            energy_usage = energy_usage.sum()
+ 
             # Convert from J to kWh.
             if energy_usage != 0:
                 energy_usage /= 3600000
@@ -111,7 +123,10 @@ class Component:
                 # TODO: Warn that no measurements have been fetched.
                 latest_energy = energy_usages[-1] if energy_usages else 0
                 energy_usages.append(latest_energy)
-
+        
+        if expanded_interval:
+            return {"epoch": energy_usages, "interval": all_expanded}
+        
         return energy_usages
 
     def init(self):
