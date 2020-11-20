@@ -85,10 +85,10 @@ export default function NavTabs() {
           <LinkTab label="Tracker" href="/tracker" {...a11yProps(0)} />
           <LinkTab label="Editor" href="/editor" {...a11yProps(1)} />
           <LinkTab label="About" href="/article" {...a11yProps(2)} />
-          <FormControlLabel
+          {/* <FormControlLabel
             control={<Switch />}
             label="Counterfactual Mode"
-          />
+          /> */}
         </Tabs>
 
 

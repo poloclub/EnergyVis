@@ -61,23 +61,17 @@ const getDataScaffold = (serverData, graphType) => {
             labelString: 'Kilowatt Hours (kWH)'
           }        
         },
-        // {
-        //   type: 'linear',
-        //   display: true,
-        //   position: 'right',
-        //   id: 'y-axis-2',
-        //   gridLines: {
-        //     drawOnArea: false,
-        //   },
-        // },
       ],
-      xAxes: [ {
-        display: true,
-        scaleLabel: {
+      xAxes: [ 
+        {
           display: true,
-          labelString: 'Interval (seconds)'
+          id: 'x-axis-1',
+          scaleLabel: {
+            display: true,
+            labelString: graphType == 0 ? 'Interval (seconds)' : 'Epoch'
+          },
         },
-      }]
+    ]
     }
   }
 
@@ -117,10 +111,10 @@ class SampleGraph extends React.Component {
   render() {
     const dataScaffold = getDataScaffold(this.state.serverData, this.state.graphType)
     return (
-      <div style={{marginLeft: '2.5%', marginRight: '2.5%'}}>
+      <div style={{marginLeft: '2.5%', marginRight: '2.5%', marginTop: '2%'}}>
         <Paper square>
           <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-            Consumption Graph
+            Experiment Consumption Graph
           </Typography>
           <Divider variant="middle" />
           <Tabs
