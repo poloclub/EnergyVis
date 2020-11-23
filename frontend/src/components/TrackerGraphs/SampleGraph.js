@@ -4,11 +4,24 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { SERVER_URI } from '../../consts/consts' 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
+import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+
+import OfflineBoltOutlinedIcon from '@material-ui/icons/OfflineBoltOutlined';
+import PublicOutlinedIcon from '@material-ui/icons/PublicOutlined';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+
+import Switch from '@material-ui/core/Switch';
+
+import Grid from '@material-ui/core/Grid';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+import FormLabel from '@material-ui/core/FormLabel';
+
+import Timer10Icon from '@material-ui/icons/Timer10';
+import TimelapseIcon from '@material-ui/icons/Timelapse';
 
 const labelGenerator = (length, interval) => {
   const arr = []
@@ -19,11 +32,11 @@ const labelGenerator = (length, interval) => {
 }
 
 
-const getDataScaffold = (serverData, graphType) => {
+const getDataScaffold = (serverData, graphType, intervalType) => {
 
   if (!serverData) return {"data": {}, "options": {}};
   // debugger;
-  const graphKey = graphType == 0 ? "interval" : "epoch"
+  const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length, graphKey == "epoch" ? 1 : 10);
 
   const data = {
@@ -58,7 +71,7 @@ const getDataScaffold = (serverData, graphType) => {
           id: 'y-axis-1',
           scaleLabel: {
             display: true,
-            labelString: 'Kilowatt Hours (kWH)'
+            labelString: graphType == 0 ? 'Carbon (CO2)' : 'Kilowatt Hours (kWH)'
           }        
         },
       ],
@@ -68,7 +81,7 @@ const getDataScaffold = (serverData, graphType) => {
           id: 'x-axis-1',
           scaleLabel: {
             display: true,
-            labelString: graphType == 0 ? 'Interval (seconds)' : 'Epoch'
+            labelString: intervalType == 0 ? 'Interval (seconds)' : 'Epoch'
           },
         },
     ]
@@ -84,7 +97,10 @@ class SampleGraph extends React.Component {
     super();
     this.state = {
       serverData: null,
-      graphType: 0
+      graphType: 0,
+      intervalType: 0,
+      sliderMax: 100,
+      sliderVal: 0
     };
     this.updateInterval = null;
   }
@@ -105,33 +121,105 @@ class SampleGraph extends React.Component {
   }
 
   handleGraphChange = (event, value) => {
-    this.setState({graphType: value})
+    if (value != null) this.setState({graphType: value})
+  }
+
+  handleIntervalChange = (event, value) => {
+    if (value != null) this.setState({intervalType: value})
   }
 
   render() {
-    const dataScaffold = getDataScaffold(this.state.serverData, this.state.graphType)
+    const dataScaffold = getDataScaffold(this.state.serverData, this.state.intervalType, this.state.graphType)
+
     return (
-      <div style={{marginLeft: '2.5%', marginRight: '2.5%', marginTop: '2%'}}>
-        <Paper square>
-          <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-            Experiment Consumption Graph
-          </Typography>
+      <div>
+          <Grid container>
+            <Grid item sm={6}>
+              <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
+                Experiment Consumption Graph
+              </Typography>
+            </Grid>
+            <Grid item sm={6}>
+            <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
+              <HelpOutlineIcon />
+            </IconButton>
+            </Grid>
+          </Grid>
+
           <Divider variant="middle" />
-          <Tabs
-            value={this.state.graphType}
-            indicatorColor="primary"
-            textColor="primary"
-            onChange={this.handleGraphChange}
-            centered
-          >
-            <Tab label="Interval" />
-            <Tab label="Epoch" />
-          </Tabs>
 
           <div style={{margin: '2.5%'}}>
             <Line data={dataScaffold["data"]} options={dataScaffold["options"]}/>
           </div>
-        </Paper>
+
+
+          <Grid style={{paddingLeft: "3%", paddingRight: "3%"}} container spacing={2}>
+            <Grid item sm={12}>
+              <FormLabel component="legend">Extrapolate consumption</FormLabel>
+
+              <Slider
+                min={0}
+                max={this.state.sliderMax}
+                value={this.state.sliderVal}
+                onChange={(e, val) => { this.setState({sliderVal: val}) }}
+                valueLabelDisplay="auto"
+              />
+            </Grid>
+            <Grid item sm={4}>
+              <div>
+                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Unit (Y-Axis)</FormLabel>
+                <ToggleButtonGroup
+                  value={this.state.graphType}
+                  exclusive
+                  onChange={this.handleGraphChange}
+                  size="small"
+                >
+                  <ToggleButton style={{textTransform: "none"}} value={0}>
+                    <PublicOutlinedIcon />
+                    <span style={{paddingLeft: '.2em'}}>Carbon (CO<sub>2</sub>)</span>
+                  </ToggleButton>
+                  <ToggleButton style={{textTransform: "none"}} value={1}>
+                    <OfflineBoltOutlinedIcon />
+                    <span style={{paddingLeft: '.2em'}}>Electricity (kWH)</span>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </div>
+            </Grid>
+            <Grid item sm={4}>
+              <div>
+                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Interval (X-Axis)</FormLabel>
+                <ToggleButtonGroup
+                  value={this.state.intervalType}
+                  exclusive
+                  onChange={this.handleIntervalChange}
+                  size="small"
+                >
+                  <ToggleButton style={{textTransform: "none"}} value={0}>
+                    <Timer10Icon />
+                    <span style={{paddingLeft: '.2em'}}>Every 10s</span>
+                  </ToggleButton>
+                  <ToggleButton style={{textTransform: "none"}} value={1}>
+                    <TimelapseIcon />
+                    <span style={{paddingLeft: '.2em'}}>Every Epoch</span>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </div>
+
+            </Grid>
+            <Grid item sm={4}>
+              <div>
+                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Cumulative Consumption</FormLabel>
+                <Grid style={{paddingTop: "6%", paddingLeft: "13.5%"}} component="label" container alignItems="center" spacing={1}>
+                  <Grid item>Off</Grid>
+                  <Grid item>
+                    <Switch name="checkedC" />
+                  </Grid>
+                  <Grid item>On</Grid>
+                </Grid>
+              </div>
+
+            </Grid>
+          </Grid>
       </div>
     );
   }

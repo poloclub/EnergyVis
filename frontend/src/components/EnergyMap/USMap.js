@@ -1,10 +1,16 @@
 import React from 'react';
 /*global d3*/
 import './USMap.css';
+import FormLabel from '@material-ui/core/FormLabel';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import IconButton from '@material-ui/core/IconButton';
 
 class USMap extends React.Component {
 
-  drawMap() {
+  drawMap = () => {
 
     //Width and height of map
     // d3.select('#energymap').selectAll("*").remove();
@@ -16,9 +22,12 @@ class USMap extends React.Component {
     var height = 400;
 
     var lowColor = '#f9f9f9'
-    var highColor = '#ad1a10'
+    var highColor = '#298A48'
 
     var clicked = null;
+
+    // good ol' js days
+    var _this = this;
 
     // D3 Projection
     var projection = d3.geoAlbersUsa()
@@ -35,6 +44,41 @@ class USMap extends React.Component {
       .attr("width", width)
       .attr("height", height);
 
+
+    function handleClick(d, i) {
+      svg.selectAll("path")
+        .style("stroke", "#fff")
+        .style("stroke-width", "1")
+      clicked = d["properties"]["name"] == clicked ? null : d["properties"]["name"]
+      d3.select(this)
+        .style("stroke-width", "3")
+        .style("stroke", "#f5b042").raise()
+    }
+
+    function handleMouseOver(d, i) {
+      d3.select(this)
+        .style("stroke-width", "3")
+        .style("stroke", "#f5b042").raise()
+      d3.select(this).style("cursor", "pointer"); 
+      _this.setState({selectedState: d['properties']['name'], selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+    }
+
+    function handleMouseOut(d, i) {
+      d3.select(this)
+        .style("stroke-width", "1")
+        .style("stroke", "#fff")
+      
+      if (clicked != null) {
+        svg.selectAll("path").filter((d, local) => {
+          return d["properties"]["name"] == clicked
+        }).style("stroke-width", "3")
+          .style("stroke", "#f5b042").raise()
+      }
+
+      _this.setState({selectedState: clicked, selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+      d3.select(this).style("cursor", "default"); 
+    }
+
     // Load in my states data!
     d3.csv("statesdata.csv", function(data) {
       var dataArray = [];
@@ -46,7 +90,7 @@ class USMap extends React.Component {
       var ramp = d3.scaleLinear().domain([minVal,maxVal]).range([lowColor,highColor])
       
       // Load GeoJSON data and merge with states data
-      d3.json("us-states.json", function(json) {
+      d3.json("us-states.json", (json) => {
 
         // Loop through each state data value in the .csv file
         for (var i = 0; i < data.length; i++) {
@@ -86,35 +130,6 @@ class USMap extends React.Component {
           .on("click", handleClick)
         
 
-        function handleClick(d, i) {
-          svg.selectAll("path")
-            .style("stroke", "#fff")
-            .style("stroke-width", "1")
-          clicked = d["properties"]["name"] == clicked ? null : d["properties"]["name"]
-          d3.select(this)
-            .style("stroke-width", "4")
-            .style("stroke", "#000").raise()
-        }
-
-        function handleMouseOver(d, i) {
-          d3.select(this)
-            .style("stroke-width", "4")
-            .style("stroke", "#000").raise()
-        }
-
-        function handleMouseOut(d, i) {
-          d3.select(this)
-            .style("stroke-width", "1")
-            .style("stroke", "#fff")
-          
-          if (clicked != null) {
-            svg.selectAll("path").filter((d, local) => {
-              return d["properties"]["name"] == clicked
-            }).style("stroke-width", "4")
-              .style("stroke", "#000").raise()
-          }
-        }
-
         // add a legend
         var w = 140, h = 200;
         d3.selectAll('#legend').remove();
@@ -147,7 +162,7 @@ class USMap extends React.Component {
           .attr("width", w - 100)
           .attr("height", h)
           .style("fill", "url(#gradient)")
-          .attr("transform", "translate(0,10)");
+          .attr("transform", "translate(0,3)");
 
         var y = d3.scaleLinear()
           .range([h, 0])
@@ -157,10 +172,19 @@ class USMap extends React.Component {
 
         key.append("g")
           .attr("class", "y axis")
-          .attr("transform", "translate(41,10)")
+          .attr("transform", "translate(41,3)")
           .call(yAxis)
+        
       });
     });
+  }
+
+  constructor(props) {
+    super();
+    this.state = {
+      selectedState: null,
+      selectedCoeff: null
+    };
   }
 
   resizeUpdate() {
@@ -181,7 +205,32 @@ class USMap extends React.Component {
   }
 
   render() {
-    return <div id="energymap"></div>;
+    return (<div>
+      <Grid container>
+        <Grid item sm={6}>
+          <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
+            Your Region
+          </Typography>
+        </Grid>
+        <Grid item sm={6}>
+        <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
+          <HelpOutlineIcon />
+        </IconButton>
+        </Grid>
+      </Grid>
+      <Divider variant="middle" />
+      <Grid style={{paddingTop: '1%'}} container>
+        <Grid item sm={6}>
+          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / MWh - higher is worse</FormLabel>
+        </Grid>
+        <Grid item sm={6}>
+        <div style={{float: "right", paddingRight: "16px"}}>
+          {this.state.selectedState && (this.state.selectedState + " - " + this.state.selectedCoeff)} CO<sub>2</sub> lb / MWh 
+        </div>
+        </Grid>
+      </Grid>
+      <div id="energymap"></div>
+    </div>)
   }
 }
 
