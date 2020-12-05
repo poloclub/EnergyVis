@@ -4,6 +4,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { SERVER_URI } from '../../consts/consts' 
+import { linearRegression } from '../../utils/regression'
 import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
@@ -32,33 +33,88 @@ const labelGenerator = (length, interval) => {
 }
 
 
-const getDataScaffold = (serverData, graphType, intervalType) => {
+const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrapolation) => {
 
   if (!serverData) return {"data": {}, "options": {}};
-  // debugger;
+
+  if (!extrapolation) extrapolation = 0;
+
   const graphKey = intervalType == 0 ? "interval" : "epoch"
-  let labels = labelGenerator(serverData["cpu"][graphKey].length, graphKey == "epoch" ? 1 : 10);
+  let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
+  let func = cumulative ? (sum => value => sum += value)(0) : x => x;
+
+  let mappedCpu = serverData["cpu"][graphKey].map(func)
+  let mappedGpu = serverData["gpu"][graphKey].map(func)
+
+  let datasets = [
+    {
+      label: 'CPU and DRAM Consumption (kWH)',
+      data: mappedCpu,
+      fill: false,
+      backgroundColor: 'rgb(255, 99, 132)',
+      borderColor: 'rgba(255, 99, 132, 0.5)',
+      pointRadius: 1.5,
+      yAxisID: 'y-axis-1',
+    },
+    {
+      label: 'GPU Consumption (kWH)',
+      data: mappedGpu,
+      fill: false,
+      backgroundColor: 'rgb(54, 162, 235)',
+      borderColor: 'rgba(54, 162, 235, 0.5)',
+      pointRadius: 1.5,
+      yAxisID: 'y-axis-1',
+    },
+  ]
+
+  let extrapolator = (data, extrapolation) => {
+    let regression = linearRegression(data)
+    var extrapolated_data = []
+
+
+    for (var i = 0; i < data.length - 1; i++) {
+      extrapolated_data.push(null)
+    }
+    
+    for (var i = data.length - 1; i < data.length + extrapolation; i++) {
+      extrapolated_data.push(regression["slope"] * i + regression["intercept"])
+    }
+
+    return extrapolated_data
+  }
+
+  if (extrapolation) {
+    datasets.push(
+      {
+        label: 'Extrapolated CPU Consumption',
+        data: extrapolator(mappedCpu, extrapolation),
+        borderDash: [10,5],
+        fill: false,
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.5)',
+        pointRadius: 1.5,
+        yAxisID: 'y-axis-1',
+      }
+    )
+
+    datasets.push(
+      {
+        label: 'Extrapolated GPU Consumption',
+        data: extrapolator(mappedGpu, extrapolation),
+        borderDash: [10,5],
+        fill: false,
+        backgroundColor: 'rgb(54, 162, 235)',
+        borderColor: 'rgba(54, 162, 235, 0.5)',
+        pointRadius: 1.5,
+        yAxisID: 'y-axis-1',
+      },
+    )
+
+  }
 
   const data = {
     labels,
-    datasets: [
-      {
-        label: 'CPU and DRAM Consumption (kWH)',
-        data: serverData["cpu"][graphKey],
-        fill: false,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.2)',
-        yAxisID: 'y-axis-1',
-      },
-      {
-        label: 'GPU Consumption (kWH)',
-        data: serverData["gpu"][graphKey],
-        fill: false,
-        backgroundColor: 'rgb(54, 162, 235)',
-        borderColor: 'rgba(54, 162, 235, 0.2)',
-        yAxisID: 'y-axis-1',
-      },
-    ],
+    datasets
   }
   
   const options = {
@@ -99,8 +155,9 @@ class SampleGraph extends React.Component {
       serverData: null,
       graphType: 0,
       intervalType: 0,
-      sliderMax: 100,
-      sliderVal: 0
+      sliderMax: 20,
+      sliderVal: 0,
+      cumulative: false
     };
     this.updateInterval = null;
   }
@@ -128,8 +185,13 @@ class SampleGraph extends React.Component {
     if (value != null) this.setState({intervalType: value})
   }
 
+  handleCumulativeSwitch = (event) => {
+    this.setState({cumulative: event.target.checked})
+  }
+
   render() {
-    const dataScaffold = getDataScaffold(this.state.serverData, this.state.intervalType, this.state.graphType)
+    const dataScaffold = getDataScaffold(this.state.serverData, 
+      this.state.graphType, this.state.intervalType, this.state.cumulative, this.state.sliderVal)
 
     return (
       <div>
@@ -162,6 +224,7 @@ class SampleGraph extends React.Component {
                 max={this.state.sliderMax}
                 value={this.state.sliderVal}
                 onChange={(e, val) => { this.setState({sliderVal: val}) }}
+                onChangeCommitted={(e, val) => { this.setState({sliderMax: val * 2 + 20}) }}
                 valueLabelDisplay="auto"
               />
             </Grid>
@@ -212,7 +275,7 @@ class SampleGraph extends React.Component {
                 <Grid style={{paddingTop: "6%", paddingLeft: "13.5%"}} component="label" container alignItems="center" spacing={1}>
                   <Grid item>Off</Grid>
                   <Grid item>
-                    <Switch name="checkedC" />
+                    <Switch checked={this.state.cumulative} onChange={this.handleCumulativeSwitch} name="checkedC" />
                   </Grid>
                   <Grid item>On</Grid>
                 </Grid>
