@@ -217,7 +217,7 @@ class SampleGraph extends React.Component {
 
           <Grid style={{paddingLeft: "3%", paddingRight: "3%"}} container spacing={2}>
             <Grid item sm={12}>
-              <FormLabel component="legend">Extrapolate consumption</FormLabel>
+              <FormLabel component="legend">Extrapolated Points</FormLabel>
 
               <Slider
                 min={0}
