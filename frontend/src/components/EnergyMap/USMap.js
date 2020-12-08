@@ -7,10 +7,11 @@ import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import IconButton from '@material-ui/core/IconButton';
+import { SignalCellularNullRounded } from '@material-ui/icons';
 
 class USMap extends React.Component {
 
-  drawMap = () => {
+  drawMap = (initialState) => {
 
     //Width and height of map
     // d3.select('#energymap').selectAll("*").remove();
@@ -23,8 +24,6 @@ class USMap extends React.Component {
 
     var lowColor = '#f9f9f9'
     var highColor = '#298A48'
-
-    var clicked = null;
 
     // good ol' js days
     var _this = this;
@@ -39,44 +38,71 @@ class USMap extends React.Component {
       .projection(projection); // tell path generator to use albersUsa projection
 
     //Create SVG element and append map to the SVG
-    var svg = d3.select("#energymap")
+    _this.svg = d3.select("#energymap")
       .append("svg")
       .attr("width", width)
       .attr("height", height);
 
 
+    // TODO: change all references to point to _this.svg
+    var svg = _this.svg
+
     function handleClick(d, i) {
+      if (d['properties']['name'] == initialState) return;
       svg.selectAll("path")
         .style("stroke", "#fff")
+        .style("stroke-dasharray", "none")
         .style("stroke-width", "1")
-      clicked = d["properties"]["name"] == clicked ? null : d["properties"]["name"]
+      
+      if (d["properties"]["name"] == _this.state.clicked) {
+        _this.setState({clicked: null})
+      } else {
+        _this.setState({clicked: d["properties"]["name"]})
+        _this.props.alternativeHandle(d["properties"]["name"])
+      }
+
       d3.select(this)
-        .style("stroke-width", "3")
+        .style("stroke-width", "4")
+        .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
+
+      _this.initialStateSVG.style("stroke-width", "4")
+        .style("stroke", "#f5b042").raise()
+
     }
 
     function handleMouseOver(d, i) {
+      if (d['properties']['name'] == initialState) return;
       d3.select(this)
-        .style("stroke-width", "3")
+        .style("stroke-width", "4")
+        .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
       d3.select(this).style("cursor", "pointer"); 
       _this.setState({selectedState: d['properties']['name'], selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+      _this.initialStateSVG.style("stroke-width", "4")
+        .style("stroke", "#f5b042").raise()
     }
 
     function handleMouseOut(d, i) {
+      if (d['properties']['name'] == initialState) return;
       d3.select(this)
         .style("stroke-width", "1")
+        .style("stroke-dasharray", "none")
         .style("stroke", "#fff")
       
-      if (clicked != null) {
+      if (_this.state.clicked != null) {
         svg.selectAll("path").filter((d, local) => {
-          return d["properties"]["name"] == clicked
-        }).style("stroke-width", "3")
+          return d["properties"]["name"] == _this.state.clicked
+        }).style("stroke-width", "4")
+          .style("stroke-dasharray", "5")
           .style("stroke", "#f5b042").raise()
       }
 
-      _this.setState({selectedState: clicked, selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+      _this.setState({selectedState: _this.state.clicked, selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
       d3.select(this).style("cursor", "default"); 
+      _this.initialStateSVG.style("stroke-width", "4")
+        .style("stroke", "#f5b042").raise()
+
     }
 
     // Load in my states data!
@@ -128,7 +154,29 @@ class USMap extends React.Component {
           .on("mouseover", handleMouseOver)
           .on("mouseout", handleMouseOut)
           .on("click", handleClick)
-        
+
+
+        _this.initialStateSVG = svg.selectAll("path")
+          .filter((d, local) => {
+            return d["properties"]["name"] == initialState
+          }).style("stroke-width", (d) => {
+            _this.setState({
+              initialState: initialState, 
+              initialCoeff: parseFloat(d['properties']['value']).toFixed(2)
+            })
+            return "4"
+          })
+          .style("stroke", "#f5b042").raise()
+
+        if (_this.state.clicked) {
+          _this.svg.selectAll('path')
+            .filter((d, local) => {
+              return d["properties"]["name"] == _this.state.clicked
+            })
+            .style("stroke-width", "4")
+            .style("stroke-dasharray", "5")
+            .style("stroke", "#f5b042").raise()
+        }
 
         // add a legend
         var w = 140, h = 200;
@@ -177,24 +225,30 @@ class USMap extends React.Component {
         
       });
     });
+
+
   }
 
-  constructor(props) {
+  constructor() {
     super();
     this.state = {
+      initialState: null,
+      initialCoeff: null,
       selectedState: null,
-      selectedCoeff: null
+      selectedCoeff: null,
+      clicked: null
     };
+    this.initialStateSVG = null
+    this.svg = null
   }
 
   resizeUpdate() {
     // this.drawMap();
-    this.drawMap()
+    this.drawMap(this.props.initialState)
   }
 
   componentDidMount() {
-    this.drawMap()
-
+    this.drawMap(this.props.initialState)
     window.addEventListener("resize", this.resizeUpdate.bind(this));
     // this.drawMap();
   }
@@ -202,6 +256,55 @@ class USMap extends React.Component {
   componentWillUnmount() {
     window.removeEventListener("resize", this.resizeUpdate.bind(this));
     d3.select('#energymap').selectAll("*").remove();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.initialState == null && this.props.initialState != null) {
+      this.drawMap(this.props.initialState)
+    }
+    
+    if (this.state.clicked && prevProps.open == true && 
+        this.props.counterfactualMode == false && 
+        this.props.open == false) {
+      if (this.svg) {
+        debugger;
+        this.svg.selectAll("path")
+          .filter((d, local) => d["properties"]["name"] == this.state.clicked)
+          .style("stroke", "#fff")
+          .style("stroke-dasharray", "none")
+          .style("stroke-width", "1")
+      }
+      if (this.initialStateSVG) {
+        this.initialStateSVG
+          .style("stroke-width", "4")
+          .style("stroke", "#f5b042").raise()
+      }
+      this.setState({
+        clicked: null,
+        selectedState: null,
+        selectedCoeff: null
+      })
+    }
+
+    if (prevProps.counterfactualMode == true && this.props.counterfactualMode == false) {
+      if (this.svg) {
+        this.svg.selectAll("path")
+          .style("stroke", "#fff")
+          .style("stroke-dasharray", "none")
+          .style("stroke-width", "1")
+      }
+      if (this.initialStateSVG) {
+        this.initialStateSVG
+          .style("stroke-width", "4")
+          .style("stroke", "#f5b042").raise()
+      }
+
+      this.setState({
+        clicked: null,
+        selectedState: null,
+        selectedCoeff: null
+      })
+    }
   }
 
   render() {
@@ -221,11 +324,20 @@ class USMap extends React.Component {
       <Divider variant="middle" />
       <Grid style={{paddingTop: '1%'}} container>
         <Grid item sm={6}>
+        </Grid>
+        <Grid item sm={6}>
+        <div style={{float: "right", paddingRight: "16px"}}>
+          {this.state.selectedState ? (this.state.selectedState + " - " + this.state.selectedCoeff) : "Alternative"} CO<sub>2</sub> lb / MWh 
+        </div>
+        </Grid>
+      </Grid>
+      <Grid container>
+        <Grid item sm={6}>
           <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / MWh - higher is worse</FormLabel>
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {this.state.selectedState && (this.state.selectedState + " - " + this.state.selectedCoeff)} CO<sub>2</sub> lb / MWh 
+          {this.state.initialState && (this.state.initialState + " - " + this.state.initialCoeff)} CO<sub>2</sub> lb / MWh
         </div>
         </Grid>
       </Grid>
