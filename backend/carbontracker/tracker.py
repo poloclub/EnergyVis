@@ -9,15 +9,17 @@ from flask import jsonify
 from flask_cors import CORS
 
 import numpy as np
+from collections import Counter
 
 from carbontracker import constants
 from carbontracker import loggerutil
 from carbontracker import predictor
 from carbontracker import exceptions
 from carbontracker.components import component
-
+import cpuinfo
 import time
-from flask import Flask                                                         
+from flask import Flask   
+import geocoder
 
 class CarbonTrackerThread(Thread):
     """Thread to fetch consumptions"""
@@ -41,7 +43,16 @@ class CarbonTrackerThread(Thread):
         self.measuring = False
         self.epoch_counter = 0
         self.daemon = True
-
+        self.g = geocoder.ip('me')
+        self.energy_stats = {
+            "component_energy": {},
+            "state": self.g.state,
+            "component_names": {
+                "cpu": {},
+                "gpu": {}
+            }
+        }
+                    
         self.start()
 
     def run(self):
@@ -65,6 +76,13 @@ class CarbonTrackerThread(Thread):
         self._components_remove_unavailable()
         self._components_init()
         self._log_components_info()
+        
+        cpu_name = cpuinfo.get_cpu_info()['brand_raw']
+        for comp in self.components:
+            if comp.name == "cpu":
+                self.energy_stats["component_names"][comp.name][cpu_name] = len(comp.devices())
+            else: self.energy_stats["component_names"][comp.name] = Counter(comp.devices())
+        
         self.logger.info("Monitoring thread started.")
 
     def stop(self):
@@ -147,11 +165,10 @@ class CarbonTrackerThread(Thread):
         return total_energy
     
     def component_energy_per_epoch(self):
-        energy_names = {}
         for comp in self.components:
-            energy_names[comp.name] = comp.energy_usage(self.epoch_times, expanded_interval=self.update_interval)
-        self.flask_server.energy_stats = energy_names
-        return energy_names
+            self.energy_stats["component_energy"][comp.name] = comp.energy_usage(self.epoch_times, expanded_interval=self.update_interval)
+        self.flask_server.energy_stats = self.energy_stats
+        return self.energy_stats
     
     def _handle_error(self, error):
         err_str = traceback.format_exc()
@@ -190,7 +207,14 @@ class FlaskServerThread(Thread):
         
         @app.route("/energy-stats")
         def get_energy_statistics():
-            return self.energy_stats
+            return self.energy_stats["component_energy"]
+        
+        @app.route("/initial-setup")
+        def get_initial_setup():
+            return {
+                "component_names": self.energy_stats["component_names"],
+                "state": self.energy_stats["state"]
+            }
         
         app.run()
 
