@@ -8,34 +8,33 @@ import Divider from '@material-ui/core/Divider';
 export default function HardwareView(props) {
   return (<div>
     <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-        Your Detected Hardware
+        Your Hardware
     </Typography>
 
     <Divider variant="middle" />
     <List dense={true}>
+      {props.components && Object.keys(props.components["cpu"]).map((component, i) => 
         <HardwareItem 
         hardwareType={"CPU"} 
-        hardwareName={"Intel i7 2600K"} 
-        quantity={5} 
+        key={i}
+        hardwareName={component} 
+        quantity={props.components["cpu"][component]} 
+        updateQuantityHandler={(val) => {props.updateQuantityHandler("cpu", component, val)}}
         />
-        <HardwareItem 
-        hardwareType={"CPU"} 
-        hardwareName={"Intel i5 3500K"} 
-        quantity={2} 
-        />
-        <HardwareItem 
-        hardwareType={"GPU"} 
-        hardwareName={"NVIDIA RTX 2080 Ti"} 
-        quantity={2} 
-        />
+      )}
+
+      {props.components && Object.keys(props.components["gpu"]).map((component, i) => 
         <HardwareItem 
         hardwareType={"GPU"} 
-        hardwareName={"NVIDIA V100"} 
-        quantity={2} 
+        key={i}
+        hardwareName={component} 
+        quantity={props.components["gpu"][component]} 
+        updateQuantityHandler={(val) => {props.updateQuantityHandler("gpu", component, val)}}
         />
+      )}
     </List>
     <Typography style={{paddingLeft: '16px'}} variant="h6" gutterBottom>
-        Add Undetected Hardware
+        Add Alternative Hardware
     </Typography>
     <Divider variant="middle" />
     <div style={{paddingBottom: '1%'}}><HardwareAutoComplete /></div>

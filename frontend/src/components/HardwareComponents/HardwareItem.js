@@ -27,15 +27,18 @@ class HardwareItem extends React.Component {
                     secondary={"Quantity: " + this.props.quantity}
                 />
                 <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="add">
+                <IconButton onClick={() => { this.props.updateQuantityHandler(this.props.quantity + 1) }} edge="end" aria-label="add">
                     <AddIcon />
                 </IconButton>
-                <IconButton edge="end" aria-label="remove">
+                <IconButton 
+                    onClick={() => { 
+                        this.props.updateQuantityHandler(this.props.quantity >= 2 ? this.props.quantity - 1 : this.props.quantity) 
+                    }} edge="end" aria-label="remove">
                     <RemoveIcon />
                 </IconButton>
-                <IconButton edge="end" aria-label="delete">
+                {/* <IconButton edge="end" aria-label="delete">
                     <DeleteIcon />
-                </IconButton>
+                </IconButton> */}
                 </ListItemSecondaryAction>
             </ListItem>
         )
