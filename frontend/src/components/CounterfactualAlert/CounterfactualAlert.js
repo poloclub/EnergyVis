@@ -18,8 +18,7 @@ export default function CounterfactualAlert(props) {
         <DialogTitle id="alert-dialog-title">{"Entering 'What-If' Mode"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            You're trying to explore an alternative! This will change your carbon output and your projections, 
-            so we're going to have to <b>pause your training.</b>
+            You're trying to explore an alternative! This will change your carbon output and your projections.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -27,7 +26,7 @@ export default function CounterfactualAlert(props) {
             No, don't do that
           </Button>
           <Button onClick={() => {props.handleClose(true)}} color="primary">
-            Yes, pause my training
+            Yes, explore alternatives
           </Button>
         </DialogActions>
       </Dialog>

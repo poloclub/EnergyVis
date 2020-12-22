@@ -4,23 +4,17 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import { SERVER_URI } from '../../consts/consts' 
 
-import 'katex/dist/katex.min.css';
-import TeX from '@matejmazur/react-katex';
-
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import CounterfactualAlert from '../CounterfactualAlert/CounterfactualAlert'
 import HardwareView from  '../HardwareComponents/HardwareView'
+import ExplainableEquation from  '../ExplainableEquation/ExplainableEquation'
+import DataSourceView from '../DataSourceView/DataSourceView'
+
 import SampleGraph from '../TrackerGraphs/SampleGraph'
 import './TrackerPageStyles.css'
 
 import Alert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
-import { createNull } from 'typescript';
 
-
-// import MathJax from 'react-mathjax2'
-const tex = `p_{t}=\\frac{1.58 t\\left(p_{c}+p_{r}+g p_{g}\\right)}{1000}`
 
 class TrackerPage extends React.Component {
 
@@ -30,9 +24,14 @@ class TrackerPage extends React.Component {
       counterfactualMode: false,
       counterfactualAlert: false,
       initialComponents: null,
-      initialState: null
+      initialState: "Texas", // todo, change to Georgia
+      initialPUE: 1.53,
+      hoveredState: null
     }
+
+    this.startPUE = 1.53
     this.startComponents = null
+    
   }
 
   componentDidMount() {
@@ -42,13 +41,14 @@ class TrackerPage extends React.Component {
         this.startComponents = JSON.parse(JSON.stringify(data["component_names"]))
         this.setState({
           initialComponents: JSON.parse(JSON.stringify(data["component_names"])),
-          initialState: JSON.parse(JSON.stringify(data["state"]))
+          initialState: JSON.parse(JSON.stringify(data["state"])),
+          counterfactualMode: JSON.parse(JSON.stringify(data["paused"]))
         })
       })
   }
 
   render() {
-    const firstRowStyle = {height: "500px", marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%'}
+    const firstRowStyle = {height: "500px", marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%', marginBottom: '2%'}
     return (
       <div>
 
@@ -56,6 +56,15 @@ class TrackerPage extends React.Component {
           this.setState({counterfactualAlert: false, counterfactualMode: enableCounterfactual})
           if (enableCounterfactual == false) {
             this.setState({initialComponents: JSON.parse(JSON.stringify(this.startComponents))})
+            // fetch(SERVER_URI + "pause?" + new URLSearchParams({status: "false"}))
+            //   .then((response) => response.json())
+            //   .then((data) => {
+            //   })
+          } else {
+            // fetch(SERVER_URI + "pause?" + new URLSearchParams({status: "true"}))
+            //   .then((response) => response.json())
+            //   .then((data) => {
+            //   })
           }
         }} />
 
@@ -69,16 +78,19 @@ class TrackerPage extends React.Component {
                   counterfactualMode: false
                 })
               }} variant="contained" color="primary">
-                Resume
+                Reset
               </Button>
             }
           >
-            Your training has been paused because you're exploring alternatives! Click resume to reset alternatives and continue training.
+            Your training has been paused because you're exploring alternatives! Click reset to reset alternatives with default values.
           </Alert>
         }
+
+        <DataSourceView />
+
         <div className="split-container">
           <div id="col-1">
-            <Paper style={{marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%'}}>
+            <Paper style={{marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%', marginBottom: '2%'}}>
             <Grid container>
               <Grid item xs>
                 <SampleGraph />
@@ -86,18 +98,7 @@ class TrackerPage extends React.Component {
             </Grid>
             <Grid container>
               <Grid item xs>
-                <div>
-                    <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-                      Calculating Your Emissions
-                    </Typography>
-                    <Divider variant="middle" />
-                  <div style={{paddingTop: "1%"}}>
-                    <TeX block>{tex}</TeX>
-                  </div>
-                  <div style={{padding: "2%"}}>
-                    <TeX block>{"\\mathrm{CO}_{2} \\mathrm{e}=0.954 p_{t}"}</TeX>
-                  </div>
-                </div>
+                <ExplainableEquation hoveredState={this.state.hoveredState} initialPUE={this.state.initialPUE} />
               </Grid>
             </Grid>
             </Paper>
@@ -110,6 +111,7 @@ class TrackerPage extends React.Component {
                   <USMap alternativeHandle={() => {
                     if (!this.state.counterfactualMode) this.setState({counterfactualAlert: true});
                   }} 
+                  selectedStateHandler={(newState) => { this.setState({hoveredState: newState}) }}
                   initialState={this.state.initialState} 
                   counterfactualMode={this.state.counterfactualMode} 
                   open={this.state.counterfactualAlert} 
@@ -121,13 +123,18 @@ class TrackerPage extends React.Component {
               <Grid item xs>
                 <Paper style={{marginLeft: "2.5%", marginRight: '2.5%', marginTop: "2%", marginBottom: '2%'}}>
                   <HardwareView 
-                  components={this.state.initialComponents}
-                  updateQuantityHandler={(region, component, quantity) => {
-                    var copiedState = {...this.state.initialComponents}
-                    copiedState[region][component] = quantity
-                    if (!this.state.counterfactualMode) this.setState({counterfactualAlert: true});
-                    this.setState({initialComponents: copiedState})
-                  }}/>
+                    initialPUE={this.state.initialPUE}
+                    components={this.state.initialComponents}
+                    updatePUEHandler={(event) => {
+                      if (event.target.value >= 0) this.setState({initialPUE: event.target.value});
+                    }}
+                    updateQuantityHandler={(region, component, quantity) => {
+                      var copiedState = {...this.state.initialComponents}
+                      copiedState[region][component] = quantity
+                      if (!this.state.counterfactualMode) this.setState({counterfactualAlert: true});
+                      this.setState({initialComponents: copiedState})
+                    }}
+                  />
                 </Paper>
               </Grid>
             </Grid>
