@@ -7,11 +7,20 @@ import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import IconButton from '@material-ui/core/IconButton';
-import { SignalCellularNullRounded } from '@material-ui/icons';
+import NRELData from './data.json'
 
-class USMap extends React.Component {
+let avg = 0;
+for (var state in NRELData) {
+  avg += NRELData[state]["co2_lb_kwh"]
+}
+avg /= Object.keys(NRELData).length
+
+
+class USMap extends React.PureComponent {
 
   drawMap = (initialState) => {
+
+    console.log("REDRAWING???")
 
     //Width and height of map
     // d3.select('#energymap').selectAll("*").remove();
@@ -78,6 +87,7 @@ class USMap extends React.Component {
         .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
       d3.select(this).style("cursor", "pointer"); 
+      // _this.props.selectedStateHandler(NRELData[d['properties']['name']]["co2_lb_kwh"])
       _this.setState({selectedState: d['properties']['name'], selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
       _this.initialStateSVG.style("stroke-width", "4")
         .style("stroke", "#f5b042").raise()
@@ -98,6 +108,7 @@ class USMap extends React.Component {
           .style("stroke", "#f5b042").raise()
       }
 
+      // _this.props.selectedStateHandler(_this.state.clicked ? NRELData[_this.state.clicked]["co2_lb_kwh"] : avg)
       _this.setState({selectedState: _this.state.clicked, selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
       d3.select(this).style("cursor", "default"); 
       _this.initialStateSVG.style("stroke-width", "4")
@@ -105,125 +116,122 @@ class USMap extends React.Component {
 
     }
 
-    // Load in my states data!
-    d3.csv("statesdata.csv", function(data) {
-      var dataArray = [];
-      for (var d = 0; d < data.length; d++) {
-        dataArray.push(parseFloat(data[d].value))
-      }
-      var minVal = d3.min(dataArray)
-      var maxVal = d3.max(dataArray)
-      var ramp = d3.scaleLinear().domain([minVal,maxVal]).range([lowColor,highColor])
-      
-      // Load GeoJSON data and merge with states data
-      d3.json("us-states.json", (json) => {
+    var dataArray = [];
+    for (var k in NRELData) {
+      dataArray.push(parseFloat(NRELData[k]["co2_lb_kwh"]))
+    }
 
-        // Loop through each state data value in the .csv file
-        for (var i = 0; i < data.length; i++) {
+    var minVal = d3.min(dataArray)
+    var maxVal = d3.max(dataArray)
+    var ramp = d3.scaleLinear().domain([minVal,maxVal]).range([lowColor,highColor])
+    
+    // Load GeoJSON data and merge with states data
+    d3.json("us-states.json", (json) => {
 
-          // Grab State Name
-          var dataState = data[i].state;
+      // Loop through each state data value in the .csv file
+      for (var dataState in NRELData) {
 
-          // Grab data value 
-          var dataValue = data[i].value;
+        // Grab data value 
+        var dataValue = NRELData[dataState]["co2_lb_kwh"]
 
-          // Find the corresponding state inside the GeoJSON
-          for (var j = 0; j < json.features.length; j++) {
-            var jsonState = json.features[j].properties.name;
+        // Find the corresponding state inside the GeoJSON
+        for (var j = 0; j < json.features.length; j++) {
+          var jsonState = json.features[j].properties.name;
 
-            if (dataState == jsonState) {
+          if (dataState == jsonState) {
 
-              // Copy the data value into the JSON
-              json.features[j].properties.value = dataValue;
+            // Copy the data value into the JSON
+            json.features[j].properties.value = dataValue;
 
-              // Stop looking through the JSON
-              break;
-            }
+            // Stop looking through the JSON
+            break;
           }
         }
+      }
 
-        // Bind the data to the SVG and create one path per GeoJSON feature
-        svg.selectAll("path")
-          .data(json.features)
-          .enter()
-          .append("path")
-          .attr("d", path)
-          .style("stroke", "#fff")
-          .style("stroke-width", "1")
-          .style("fill", function(d) { return ramp(d.properties.value) })
-          .on("mouseover", handleMouseOver)
-          .on("mouseout", handleMouseOut)
-          .on("click", handleClick)
+      // Bind the data to the SVG and create one path per GeoJSON feature
+      svg.selectAll("path")
+        .data(json.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .style("stroke", "#fff")
+        .style("stroke-width", "1")
+        .style("fill", function(d) { return ramp(d.properties.value) })
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut)
+        .on("click", handleClick)
 
 
-        _this.initialStateSVG = svg.selectAll("path")
-          .filter((d, local) => {
-            return d["properties"]["name"] == initialState
-          }).style("stroke-width", (d) => {
-            _this.setState({
-              initialState: initialState, 
-              initialCoeff: parseFloat(d['properties']['value']).toFixed(2)
-            })
-            return "4"
+      _this.initialStateSVG = svg.selectAll("path")
+        .filter((d, local) => {
+          return d["properties"]["name"] == initialState
+        }).style("stroke-width", (d) => {
+          _this.setState({
+            initialState: initialState, 
+            initialCoeff: parseFloat(d['properties']['value']).toFixed(2)
           })
+          return "4"
+        })
+        .style("stroke", "#f5b042").raise()
+
+      if (_this.state.clicked) {
+        _this.svg.selectAll('path')
+          .filter((d, local) => {
+            return d["properties"]["name"] == _this.state.clicked
+          })
+          .style("stroke-width", "4")
+          .style("stroke-dasharray", "5")
           .style("stroke", "#f5b042").raise()
+      }
 
-        if (_this.state.clicked) {
-          _this.svg.selectAll('path')
-            .filter((d, local) => {
-              return d["properties"]["name"] == _this.state.clicked
-            })
-            .style("stroke-width", "4")
-            .style("stroke-dasharray", "5")
-            .style("stroke", "#f5b042").raise()
-        }
+      // add a legend
+      var w = 140, h = 200;
+      d3.selectAll('#legend').remove();
+      var key = d3.select("#energymap")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("id", "legend");
 
-        // add a legend
-        var w = 140, h = 200;
-        d3.selectAll('#legend').remove();
-        var key = d3.select("#energymap")
-          .append("svg")
-          .attr("width", w)
-          .attr("height", h)
-          .attr("id", "legend");
+      var legend = key.append("defs")
+        .append("svg:linearGradient")
+        .attr("id", "gradient")
+        .attr("x1", "100%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "100%")
+        .attr("spreadMethod", "pad");
 
-        var legend = key.append("defs")
-          .append("svg:linearGradient")
-          .attr("id", "gradient")
-          .attr("x1", "100%")
-          .attr("y1", "0%")
-          .attr("x2", "100%")
-          .attr("y2", "100%")
-          .attr("spreadMethod", "pad");
-
-        legend.append("stop")
-          .attr("offset", "0%")
-          .attr("stop-color", highColor)
-          .attr("stop-opacity", 1);
-          
-        legend.append("stop")
-          .attr("offset", "100%")
-          .attr("stop-color", lowColor)
-          .attr("stop-opacity", 1);
-
-        key.append("rect")
-          .attr("width", w - 100)
-          .attr("height", h)
-          .style("fill", "url(#gradient)")
-          .attr("transform", "translate(0,3)");
-
-        var y = d3.scaleLinear()
-          .range([h, 0])
-          .domain([minVal, maxVal]);
-
-        var yAxis = d3.axisRight(y);
-
-        key.append("g")
-          .attr("class", "y axis")
-          .attr("transform", "translate(41,3)")
-          .call(yAxis)
+      legend.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", highColor)
+        .attr("stop-opacity", 1);
         
-      });
+      legend.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", lowColor)
+        .attr("stop-opacity", 1);
+
+      key.append("rect")
+        .attr("width", w - 100)
+        .attr("height", h)
+        .style("fill", "url(#gradient)")
+        .attr("transform", "translate(0,3)");
+
+      var y = d3.scaleLinear()
+        .range([h, 0])
+        .domain([minVal, maxVal]);
+
+      var yAxis = d3.axisRight(y);
+
+      key.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(41,3)")
+        .call(yAxis)
+
+      key.attr("height", h + 20)
+      
     });
 
 
@@ -258,7 +266,13 @@ class USMap extends React.Component {
     d3.select('#energymap').selectAll("*").remove();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
+
+    if (prevState.selectedState != this.state.selectedState) {
+      const newVal = this.state.selectedState ? NRELData[this.state.selectedState]["co2_lb_kwh"] : avg
+      this.props.selectedStateHandler(newVal)
+    }
+
     if (prevProps.initialState == null && this.props.initialState != null) {
       this.drawMap(this.props.initialState)
     }
@@ -267,7 +281,6 @@ class USMap extends React.Component {
         this.props.counterfactualMode == false && 
         this.props.open == false) {
       if (this.svg) {
-        debugger;
         this.svg.selectAll("path")
           .filter((d, local) => d["properties"]["name"] == this.state.clicked)
           .style("stroke", "#fff")
@@ -327,17 +340,17 @@ class USMap extends React.Component {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {this.state.selectedState ? (this.state.selectedState + " - " + this.state.selectedCoeff) : "Alternative"} CO<sub>2</sub> lb / MWh 
+          {this.state.selectedState ? (this.state.selectedState + " - " + this.state.selectedCoeff) : "Alternative"} CO<sub>2</sub> lb / kWh 
         </div>
         </Grid>
       </Grid>
       <Grid container>
         <Grid item sm={6}>
-          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / MWh - higher is worse</FormLabel>
+          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / kWh - higher is worse</FormLabel>
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {this.state.initialState && (this.state.initialState + " - " + this.state.initialCoeff)} CO<sub>2</sub> lb / MWh
+          {this.state.initialState && (this.state.initialState + " - " + this.state.initialCoeff)} CO<sub>2</sub> lb / kWh
         </div>
         </Grid>
       </Grid>
