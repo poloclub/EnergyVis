@@ -6,6 +6,9 @@ import { Line } from 'react-chartjs-2';
 import { SERVER_URI } from '../../consts/consts' 
 import { linearRegression } from '../../utils/regression'
 import Slider from '@material-ui/core/Slider';
+import Pagination from '@material-ui/lab/Pagination';
+import PaginationItem from '@material-ui/lab/PaginationItem';
+
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -147,14 +150,14 @@ const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrap
   return {options, data}
 }
 
-class SampleGraph extends React.Component {
+class SampleGraph extends React.PureComponent {
 
   constructor(props) {
     super();
     this.state = {
       serverData: null,
       graphType: 0,
-      intervalType: 0,
+      intervalType: 1,
       sliderMax: 20,
       sliderVal: 0,
       cumulative: false
@@ -166,11 +169,12 @@ class SampleGraph extends React.Component {
     fetch(SERVER_URI + "energy-stats").then((response) => response.json())
       .then((data) => {
         this.setState({serverData: data})
+        setTimeout(this.fetchGraphData, 5000);
       })
   }
 
   componentDidMount() {
-    this.updateInterval = setInterval(this.fetchGraphData, 5000);
+    this.updateInterval = this.fetchGraphData();
   }
 
   componentWillUnmount() {
@@ -192,7 +196,6 @@ class SampleGraph extends React.Component {
   render() {
     const dataScaffold = getDataScaffold(this.state.serverData, 
       this.state.graphType, this.state.intervalType, this.state.cumulative, this.state.sliderVal)
-
     return (
       <div>
           <Grid container>
@@ -219,14 +222,25 @@ class SampleGraph extends React.Component {
             <Grid item sm={12}>
               <FormLabel component="legend">Extrapolated Points</FormLabel>
 
-              <Slider
+              {/* <Slider
                 min={0}
                 max={this.state.sliderMax}
                 value={this.state.sliderVal}
                 onChange={(e, val) => { this.setState({sliderVal: val}) }}
                 onChangeCommitted={(e, val) => { this.setState({sliderMax: val * 2 + 20}) }}
                 valueLabelDisplay="auto"
-              />
+              /> */}
+             
+               <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
+                <Pagination renderItem={(item) => { 
+                  item.page--;
+                  return <PaginationItem {...item} />
+                }} page={this.state.sliderVal + 1} count={this.state.sliderMax} 
+                onChange={(e, val) => { this.setState({sliderVal: val - 1, sliderMax: val * 2 + 20}) }}
+                size="large" showFirstButton showLastButton />
+               </div>
+
+
             </Grid>
             <Grid item sm={4}>
               <div>
@@ -248,7 +262,7 @@ class SampleGraph extends React.Component {
                 </ToggleButtonGroup>
               </div>
             </Grid>
-            <Grid item sm={4}>
+            {/* <Grid item sm={4}>
               <div>
                 <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Interval (X-Axis)</FormLabel>
                 <ToggleButtonGroup
@@ -268,7 +282,7 @@ class SampleGraph extends React.Component {
                 </ToggleButtonGroup>
               </div>
 
-            </Grid>
+            </Grid> */}
             <Grid item sm={4}>
               <div>
                 <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Cumulative Consumption</FormLabel>
