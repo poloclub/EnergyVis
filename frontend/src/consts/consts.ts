@@ -1,1 +1,1 @@
-export const SERVER_URI = "http://localhost:5000/"
+export const SERVER_URI = window.location.href.includes("localhost") ? "http://localhost:5000/" : "/"
