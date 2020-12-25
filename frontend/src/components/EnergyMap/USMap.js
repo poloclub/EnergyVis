@@ -7,7 +7,11 @@ import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import IconButton from '@material-ui/core/IconButton';
-import NRELData from './data.json'
+import NRELData from '../../NRELData.json'
+
+import { observer } from "mobx-react"
+import { reaction } from "mobx"
+import TrackerStore from '../../stores/TrackerStore'
 
 let avg = 0;
 for (var state in NRELData) {
@@ -15,12 +19,10 @@ for (var state in NRELData) {
 }
 avg /= Object.keys(NRELData).length
 
-
+@observer
 class USMap extends React.PureComponent {
 
   drawMap = (initialState) => {
-
-    console.log("REDRAWING???")
 
     //Width and height of map
     // d3.select('#energymap').selectAll("*").remove();
@@ -67,7 +69,7 @@ class USMap extends React.PureComponent {
         _this.setState({clicked: null})
       } else {
         _this.setState({clicked: d["properties"]["name"]})
-        _this.props.alternativeHandle(d["properties"]["name"])
+        if (!TrackerStore.counterfactualMode) TrackerStore.promptAlternativeMode();
       }
 
       d3.select(this)
@@ -81,20 +83,21 @@ class USMap extends React.PureComponent {
     }
 
     function handleMouseOver(d, i) {
-      if (d['properties']['name'] == initialState) return;
+      if (d['properties']['name'] == TrackerStore.initialState) return;
       d3.select(this)
         .style("stroke-width", "4")
         .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
       d3.select(this).style("cursor", "pointer"); 
       // _this.props.selectedStateHandler(NRELData[d['properties']['name']]["co2_lb_kwh"])
-      _this.setState({selectedState: d['properties']['name'], selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+      // _this.setState({selectedState: d['properties']['name']})
+      TrackerStore.setHoveredState(d['properties']['name'])
       _this.initialStateSVG.style("stroke-width", "4")
         .style("stroke", "#f5b042").raise()
     }
 
     function handleMouseOut(d, i) {
-      if (d['properties']['name'] == initialState) return;
+      if (d['properties']['name'] == TrackerStore.initialState) return;
       d3.select(this)
         .style("stroke-width", "1")
         .style("stroke-dasharray", "none")
@@ -106,10 +109,11 @@ class USMap extends React.PureComponent {
         }).style("stroke-width", "4")
           .style("stroke-dasharray", "5")
           .style("stroke", "#f5b042").raise()
+
+        
       }
 
-      // _this.props.selectedStateHandler(_this.state.clicked ? NRELData[_this.state.clicked]["co2_lb_kwh"] : avg)
-      _this.setState({selectedState: _this.state.clicked, selectedCoeff: parseFloat(d['properties']['value']).toFixed(2)})
+      TrackerStore.setHoveredState(_this.state.clicked)
       d3.select(this).style("cursor", "default"); 
       _this.initialStateSVG.style("stroke-width", "4")
         .style("stroke", "#f5b042").raise()
@@ -240,10 +244,6 @@ class USMap extends React.PureComponent {
   constructor() {
     super();
     this.state = {
-      initialState: null,
-      initialCoeff: null,
-      selectedState: null,
-      selectedCoeff: null,
       clicked: null
     };
     this.initialStateSVG = null
@@ -251,73 +251,74 @@ class USMap extends React.PureComponent {
   }
 
   resizeUpdate() {
-    // this.drawMap();
-    this.drawMap(this.props.initialState)
+    this.drawMap(TrackerStore.initialState)
   }
 
   componentDidMount() {
-    this.drawMap(this.props.initialState)
+    this.drawMap(TrackerStore.initialState)
     window.addEventListener("resize", this.resizeUpdate.bind(this));
-    // this.drawMap();
+    
+    reaction(
+      () => TrackerStore.initialState,
+      (newState) => {
+        this.drawMap(newState)
+      }
+    )
+
+    reaction(
+      () => TrackerStore.counterfactualMode,
+      (newMode) => {
+        if (newMode) return
+        if (this.svg) {
+          this.svg.selectAll("path")
+            .style("stroke", "#fff")
+            .style("stroke-dasharray", "none")
+            .style("stroke-width", "1")
+        }
+        if (this.initialStateSVG) {
+          this.initialStateSVG
+            .style("stroke-width", "4")
+            .style("stroke", "#f5b042").raise()
+        }
+
+        TrackerStore.setHoveredState(null)
+        this.setState({
+          clicked: null,
+        })         
+      }
+    )
+
+    reaction(
+      () => TrackerStore.counterfactualAlert,
+      (newAlert, prevAlert) => {
+        // must be in alert state
+        if (!prevAlert) return;
+        // the new alert must be dismissed, and the user must not be in counterfacutal mode
+        if (newAlert || TrackerStore.counterfactualMode) return;
+        if (this.svg) {
+          this.svg.selectAll("path")
+            .filter((d, local) => d["properties"]["name"] == this.state.clicked)
+            .style("stroke", "#fff")
+            .style("stroke-dasharray", "none")
+            .style("stroke-width", "1")
+        }
+        if (this.initialStateSVG) {
+          this.initialStateSVG
+            .style("stroke-width", "4")
+            .style("stroke", "#f5b042").raise()
+        }
+        TrackerStore.setHoveredState(null)
+        this.setState({
+          clicked: null,
+          selectedState: null,
+        })     
+      }
+    )
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.resizeUpdate.bind(this));
     d3.select('#energymap').selectAll("*").remove();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-
-    if (prevState.selectedState != this.state.selectedState) {
-      const newVal = this.state.selectedState ? NRELData[this.state.selectedState]["co2_lb_kwh"] : avg
-      this.props.selectedStateHandler(newVal)
-    }
-
-    if (prevProps.initialState == null && this.props.initialState != null) {
-      this.drawMap(this.props.initialState)
-    }
-    
-    if (this.state.clicked && prevProps.open == true && 
-        this.props.counterfactualMode == false && 
-        this.props.open == false) {
-      if (this.svg) {
-        this.svg.selectAll("path")
-          .filter((d, local) => d["properties"]["name"] == this.state.clicked)
-          .style("stroke", "#fff")
-          .style("stroke-dasharray", "none")
-          .style("stroke-width", "1")
-      }
-      if (this.initialStateSVG) {
-        this.initialStateSVG
-          .style("stroke-width", "4")
-          .style("stroke", "#f5b042").raise()
-      }
-      this.setState({
-        clicked: null,
-        selectedState: null,
-        selectedCoeff: null
-      })
-    }
-
-    if (prevProps.counterfactualMode == true && this.props.counterfactualMode == false) {
-      if (this.svg) {
-        this.svg.selectAll("path")
-          .style("stroke", "#fff")
-          .style("stroke-dasharray", "none")
-          .style("stroke-width", "1")
-      }
-      if (this.initialStateSVG) {
-        this.initialStateSVG
-          .style("stroke-width", "4")
-          .style("stroke", "#f5b042").raise()
-      }
-
-      this.setState({
-        clicked: null,
-        selectedState: null,
-        selectedCoeff: null
-      })
-    }
   }
 
   render() {
@@ -340,7 +341,7 @@ class USMap extends React.PureComponent {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {this.state.selectedState ? (this.state.selectedState + " - " + this.state.selectedCoeff) : "Alternative"} CO<sub>2</sub> lb / kWh 
+          {TrackerStore.hoveredState ? (TrackerStore.hoveredState + " - " + NRELData[TrackerStore.hoveredState]["co2_lb_kwh"].toFixed(2)) : "Alternative"} CO<sub>2</sub> lb / kWh 
         </div>
         </Grid>
       </Grid>
@@ -350,7 +351,7 @@ class USMap extends React.PureComponent {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {this.state.initialState && (this.state.initialState + " - " + this.state.initialCoeff)} CO<sub>2</sub> lb / kWh
+          {TrackerStore.initialState && (TrackerStore.initialState + " - " + NRELData[TrackerStore.initialState]["co2_lb_kwh"].toFixed(2))} CO<sub>2</sub> lb / kWh
         </div>
         </Grid>
       </Grid>
