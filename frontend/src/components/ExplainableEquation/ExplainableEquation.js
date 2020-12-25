@@ -1,29 +1,26 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
-// const eq1 = `\\color{blue} p_{t}=\\frac{1.58 t\\left(p_{c}+p_{r}+g p_{g}\\right)}{1000}`
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
-import ListSubheader from '@material-ui/core/ListSubheader';
+import { observer } from "mobx-react"
+import TrackerStore from '../../stores/TrackerStore'
+
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import DraftsIcon from '@material-ui/icons/Drafts';
-import SendIcon from '@material-ui/icons/Send';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
 
+import NRELData from '../../NRELData.json'
 
 const colors = ["#7200ac", "#2db15d", "#fb001d", "#126ed5", "#ffa06d", "#db4e9e", "#00A5CF", "#926C4F", "#596157"]
 /*global katex*/
+
+@observer
 class ExplainableEquation extends React.PureComponent {
-
-
   constructor(props) {
     super(props)
     this.state = {
@@ -55,7 +52,7 @@ class ExplainableEquation extends React.PureComponent {
               <InboxIcon />
             </ListItemIcon> */}
             <ListItemText>
-              <BlockMath>{String.raw`\bm{y = \textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${this.props.initialPUE}} \hspace{3pt}} [=] \hspace{3pt} \text{watts}`}</BlockMath>
+              <BlockMath>{String.raw`\bm{y = \textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${TrackerStore.initialPUE}} \hspace{3pt}} [=] \hspace{3pt} \text{watts}`}</BlockMath>
             </ListItemText>
             {this.state["eq1"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -96,11 +93,8 @@ class ExplainableEquation extends React.PureComponent {
             </List>
           </Collapse>
           <ListItem button onClick={() => this.handleClick("eq3")}>
-            {/* <ListItemIcon>
-              <InboxIcon />
-            </ListItemIcon> */}
             <ListItemText>
-              <BlockMath>{String.raw`\bm{z = \textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${this.props.hoveredState}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}} \hspace{3pt} [=] \hspace{3pt} \text{pounds}`}</BlockMath>
+              <BlockMath>{String.raw`\bm{z = \textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${NRELData[(TrackerStore.hoveredState || TrackerStore.initialState)]["co2_lb_kwh"].toFixed(2)}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}} \hspace{3pt} [=] \hspace{3pt} \text{pounds}`}</BlockMath>
             </ListItemText>
             {this.state["eq3"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -118,7 +112,6 @@ class ExplainableEquation extends React.PureComponent {
           </Collapse>
         </List>
       </div>
-
     );    
   }
 

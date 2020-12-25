@@ -6,7 +6,10 @@ import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 
-export default function HardwareView(props) {
+import { observer } from "mobx-react"
+import TrackerStore from '../../stores/TrackerStore'
+
+export default observer(() => {
   return (<div>
 
     <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
@@ -24,8 +27,10 @@ export default function HardwareView(props) {
           shrink: true,
         }}
         variant="outlined"
-        value={props.initialPUE}
-        onChange={props.updatePUEHandler}
+        value={TrackerStore.initialPUE}
+        onChange={(event) => { 
+          if (event.target.value >= 0) TrackerStore.setPUE(event.target.value)
+        }}
       />
     </div>
 
@@ -35,23 +40,29 @@ export default function HardwareView(props) {
 
     <Divider variant="middle" />
     <List dense={true}>
-      {props.components && Object.keys(props.components["cpu"]).map((component, i) => 
+      {TrackerStore.initialComponents && 
+        Object.keys(TrackerStore.initialComponents["cpu"]).map((component, i) => 
         <HardwareItem 
         hardwareType={"CPU"} 
         key={i}
         hardwareName={component} 
-        quantity={props.components["cpu"][component]} 
-        updateQuantityHandler={(val) => {props.updateQuantityHandler("cpu", component, val)}}
+        quantity={TrackerStore.initialComponents["cpu"][component]} 
+        updateQuantityHandler={(val) => {
+          // props.updateQuantityHandler("cpu", component, val)
+        }}
         />
       )}
 
-      {props.components && Object.keys(props.components["gpu"]).map((component, i) => 
+      {TrackerStore.initialComponents && 
+        Object.keys(TrackerStore.initialComponents["gpu"]).map((component, i) => 
         <HardwareItem 
         hardwareType={"GPU"} 
         key={i}
         hardwareName={component} 
-        quantity={props.components["gpu"][component]} 
-        updateQuantityHandler={(val) => {props.updateQuantityHandler("gpu", component, val)}}
+        quantity={TrackerStore.initialComponents["gpu"][component]} 
+        updateQuantityHandler={(val) => {
+          // props.updateQuantityHandler("gpu", component, val)
+        }}
         />
       )}
     </List>
@@ -61,4 +72,4 @@ export default function HardwareView(props) {
     <Divider variant="middle" />
     <div style={{paddingBottom: '1%'}}><HardwareAutoComplete /></div>
   </div>)
-}
+})
