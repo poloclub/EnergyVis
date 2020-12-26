@@ -47,10 +47,10 @@ const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrap
 
   const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
-  let func = cumulative ? (sum => value => sum += value)(0) : x => x;
 
-  let mappedCpu = serverData["cpu"][graphKey].map(func)
-  let mappedGpu = serverData["gpu"][graphKey].map(func)
+  // sum cumulative func needs to be redefined
+  let mappedCpu = serverData["cpu"][graphKey].map(cumulative ? (sum => value => sum += value)(0) : x => x)
+  let mappedGpu = serverData["gpu"][graphKey].map(cumulative ? (sum => value => sum += value)(0) : x => x)
 
   let datasets = [
     {
