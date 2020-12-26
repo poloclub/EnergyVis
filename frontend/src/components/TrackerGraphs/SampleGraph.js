@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import { SERVER_URI } from '../../consts/consts' 
+import { SERVER_URI, MODEL_DATA } from '../../consts/consts' 
 import { linearRegression } from '../../utils/regression'
 import Slider from '@material-ui/core/Slider';
 import Pagination from '@material-ui/lab/Pagination';
@@ -23,6 +23,9 @@ import Grid from '@material-ui/core/Grid';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import FormLabel from '@material-ui/core/FormLabel';
+
+import { observer } from "mobx-react"
+import TrackerStore from '../../stores/TrackerStore'
 
 import Timer10Icon from '@material-ui/icons/Timer10';
 import TimelapseIcon from '@material-ui/icons/Timelapse';
@@ -150,6 +153,7 @@ const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrap
   return {options, data}
 }
 
+@observer
 class SampleGraph extends React.PureComponent {
 
   constructor(props) {
@@ -194,7 +198,7 @@ class SampleGraph extends React.PureComponent {
   }
 
   render() {
-    const dataScaffold = getDataScaffold(this.state.serverData, 
+    const dataScaffold = getDataScaffold(MODEL_DATA[TrackerStore.modelIdx].serverData, 
       this.state.graphType, this.state.intervalType, this.state.cumulative, this.state.sliderVal)
     return (
       <div>
@@ -222,14 +226,14 @@ class SampleGraph extends React.PureComponent {
             <Grid item sm={12}>
               <FormLabel component="legend">Extrapolated Points</FormLabel>
 
-              {/* <Slider
+              <Slider
                 min={0}
                 max={this.state.sliderMax}
                 value={this.state.sliderVal}
                 onChange={(e, val) => { this.setState({sliderVal: val}) }}
                 onChangeCommitted={(e, val) => { this.setState({sliderMax: val * 2 + 20}) }}
                 valueLabelDisplay="auto"
-              /> */}
+              />
              
                <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
                 <Pagination renderItem={(item) => { 

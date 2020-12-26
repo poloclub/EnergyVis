@@ -1,27 +1,31 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
-
 import HttpIcon from '@material-ui/icons/Http';
 import FindInPageIcon from '@material-ui/icons/FindInPage';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import TextField from '@material-ui/core/TextField';
+import { MODEL_DATA } from '../../consts/consts'
 
-const modelData = [
-  {
-    name: 'Transfomer Base',
-    author: 'Vaswani et al. 2017'
-  },
-  {
-    name: 'BERT base',
-    author: 'Devlin et al. 2018'
+import { observer } from "mobx-react"
+import TrackerStore from '../../stores/TrackerStore'
+import { withStyles } from '@material-ui/core/styles';
+
+const StyledToggleButtonGroup = withStyles((theme) => ({
+  grouped: {
+    margin: '8px',
+    '&:not(:first-child)': {
+      borderRadius: theme.shape.borderRadius,
+    },
+    '&:first-child': {
+      borderRadius: theme.shape.borderRadius,
+    }
   }
-]
+}))(ToggleButtonGroup);
 
+
+@observer
 class DataSourceView extends React.PureComponent {
 
   constructor(props) {
@@ -39,22 +43,27 @@ class DataSourceView extends React.PureComponent {
     return (
       
       <Grid style={{width: 'calc(100% + 8px)'}} container justify="center" spacing={2}>
-        {this.state.view == 'list' && modelData.map((value, idx) => (
-          <Grid item key={idx}>
-            <Card style={{maxWidth: 275}}>
-              <CardActionArea>
-                <CardContent>
-                  <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
-                    { value.author }
-                  </Typography>
-                  <Typography variant="h5" component="h2">
-                    { value.name }
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
+        <StyledToggleButtonGroup
+          size="small"
+          value={TrackerStore.modelIdx}
+          exclusive
+          onChange={(event, newPaper) => { TrackerStore.setModelSource(newPaper) }}
+          aria-label="text alignment"
+        >
+        {this.state.view == 'list' && MODEL_DATA.map((value, idx) => (
+
+          <ToggleButton style={{textTransform: 'none', display: 'block', textAlign: 'left', border: '1px solid rgba(0, 0, 0, 0.12)'}}
+              value={idx}>
+            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+              { value.author }
+            </Typography>
+            <Typography variant="h5" component="h2">
+              { value.name }
+            </Typography>
+          </ToggleButton>
         ))}
+        </StyledToggleButtonGroup>
+
 
         { this.state.view != 'list' &&
 
