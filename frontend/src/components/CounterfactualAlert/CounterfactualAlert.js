@@ -61,7 +61,7 @@ export default observer(() => {
           </Button>
         }
       > 
-        Your training has been paused because you're exploring alternatives! Click reset to reset alternatives with default values.
+        You're currently exploring alternatives! Click reset to reset alternatives with default values.
       </Alert> }
     </div>
   );

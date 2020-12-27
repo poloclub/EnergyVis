@@ -4,6 +4,8 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { SERVER_URI, MODEL_DATA } from '../../consts/consts' 
+import NRELData from '../../NRELData.json' 
+
 import { linearRegression } from '../../utils/regression'
 import Slider from '@material-ui/core/Slider';
 import Pagination from '@material-ui/lab/Pagination';
@@ -39,7 +41,8 @@ const labelGenerator = (length, interval) => {
 }
 
 
-const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrapolation) => {
+const getDataScaffold = (serverData, graphType, intervalType, 
+                        PUE, hoveredState, cumulative, extrapolation) => {
 
   if (!serverData) return {"data": {}, "options": {}};
 
@@ -48,30 +51,59 @@ const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrap
   const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
 
+  const co2Converter = (PUE, co2Factor) => graphType == 0 ? (kwh) => kwh * PUE * co2Factor : x => x;
+  const cumulativeMap = (start) => cumulative ? (sum => value => sum += value)(start) : x => x
+
+  const originalCo2Converter = 
+    co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"])
+  const alternativeConverter = 
+    hoveredState && co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"])
+
   // sum cumulative func needs to be redefined
-  let mappedCpu = serverData["cpu"][graphKey].map(cumulative ? (sum => value => sum += value)(0) : x => x)
-  let mappedGpu = serverData["gpu"][graphKey].map(cumulative ? (sum => value => sum += value)(0) : x => x)
+  let mappedCpu = serverData["cpu"][graphKey]
+    .map(cumulativeMap(0))
+
+  let mappedGpu = serverData["gpu"][graphKey]
+    .map(cumulativeMap(0))
+
+  let originalSummedEnergy = mappedGpu.map(function (num, idx) {
+    return num + mappedCpu[idx];
+  })
 
   let datasets = [
     {
-      label: 'CPU and DRAM Consumption (kWH)',
-      data: mappedCpu,
+      label: 'Consumption ' + (graphType == 0 ? '(CO2)' : '(kWH)'),
+      data: originalSummedEnergy.map(originalCo2Converter),
       fill: false,
-      backgroundColor: 'rgb(255, 99, 132)',
-      borderColor: 'rgba(255, 99, 132, 0.5)',
+      backgroundColor: graphType == 0 ? 'rgb(45, 177, 93)' : 'rgb(255, 99, 132)',
+      borderColor: graphType == 0 ? 'rgba(45, 177, 93, 0.5)' : 'rgba(255, 99, 132, 0.5)',
       pointRadius: 1.5,
       yAxisID: 'y-axis-1',
     },
-    {
-      label: 'GPU Consumption (kWH)',
-      data: mappedGpu,
-      fill: false,
-      backgroundColor: 'rgb(54, 162, 235)',
-      borderColor: 'rgba(54, 162, 235, 0.5)',
-      pointRadius: 1.5,
-      yAxisID: 'y-axis-1',
-    },
+    // {
+    //   label: 'GPU Consumption (kWH)',
+    //   data: mappedGpu,
+    //   fill: false,
+    //   backgroundColor: 'rgb(54, 162, 235)',
+    //   borderColor: 'rgba(54, 162, 235, 0.5)',
+    //   pointRadius: 1.5,
+    //   yAxisID: 'y-axis-1',
+    // },
   ]
+
+  if (hoveredState) {
+    datasets.push(
+      {
+        label: 'Alternative Consumption',
+        data: originalSummedEnergy.map(alternativeConverter),
+        fill: false,
+        backgroundColor: 'rgb(245, 176, 66)',
+        borderColor: 'rgba(245, 176, 66, 0.5)',
+        pointRadius: 1.5,
+        yAxisID: 'y-axis-1',
+      }
+    )
+  }
 
   let extrapolator = (data, extrapolation) => {
     let regression = linearRegression(data)
@@ -92,29 +124,45 @@ const getDataScaffold = (serverData, graphType, intervalType, cumulative, extrap
   if (extrapolation) {
     datasets.push(
       {
-        label: 'Extrapolated CPU Consumption',
-        data: extrapolator(mappedCpu, extrapolation),
+        label: 'Extrapolated Consumption',
+        data: extrapolator(originalSummedEnergy.map(originalCo2Converter), extrapolation),
         borderDash: [10,5],
         fill: false,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.5)',
+        backgroundColor: graphType == 0 ? 'rgb(45, 177, 93)' : 'rgb(255, 99, 132)',
+        borderColor: graphType == 0 ? 'rgba(45, 177, 93, 0.5)' : 'rgba(255, 99, 132, 0.5)',
         pointRadius: 1.5,
         yAxisID: 'y-axis-1',
       }
     )
 
-    datasets.push(
-      {
-        label: 'Extrapolated GPU Consumption',
-        data: extrapolator(mappedGpu, extrapolation),
-        borderDash: [10,5],
-        fill: false,
-        backgroundColor: 'rgb(54, 162, 235)',
-        borderColor: 'rgba(54, 162, 235, 0.5)',
-        pointRadius: 1.5,
-        yAxisID: 'y-axis-1',
-      },
-    )
+    
+    if (hoveredState) {
+      datasets.push(
+        {
+          label: 'Extrapolated Alternative Consumption',
+          data: extrapolator(originalSummedEnergy.map(alternativeConverter), extrapolation),
+          borderDash: [10,5],
+          fill: false,
+          backgroundColor: 'rgb(245, 176, 66)',
+          borderColor: 'rgba(245, 176, 66, 0.5)',
+          pointRadius: 1.5,
+          yAxisID: 'y-axis-1',
+        }
+      )
+    }
+  
+    // datasets.push(
+    //   {
+    //     label: 'Extrapolated GPU Consumption',
+    //     data: extrapolator(mappedGpu, extrapolation),
+    //     borderDash: [10,5],
+    //     fill: false,
+    //     backgroundColor: 'rgb(54, 162, 235)',
+    //     borderColor: 'rgba(54, 162, 235, 0.5)',
+    //     pointRadius: 1.5,
+    //     yAxisID: 'y-axis-1',
+    //   },
+    // )
 
   }
 
@@ -199,7 +247,10 @@ class SampleGraph extends React.PureComponent {
 
   render() {
     const dataScaffold = getDataScaffold(MODEL_DATA[TrackerStore.modelIdx].serverData, 
-      this.state.graphType, this.state.intervalType, this.state.cumulative, this.state.sliderVal)
+      this.state.graphType, this.state.intervalType, TrackerStore.initialPUE, 
+      TrackerStore.hoveredState, 
+      this.state.cumulative, this.state.sliderVal)
+    
     return (
       <div>
           <Grid container>
