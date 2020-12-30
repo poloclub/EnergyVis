@@ -12,6 +12,7 @@ import NRELData from '../../NRELData.json'
 import { observer } from "mobx-react"
 import { reaction } from "mobx"
 import TrackerStore from '../../stores/TrackerStore'
+import { SERVER_URI, MODEL_DATA } from '../../consts/consts'
 
 let avg = 0;
 for (var state in NRELData) {
@@ -59,7 +60,7 @@ class USMap extends React.PureComponent {
     var svg = _this.svg
 
     function handleClick(d, i) {
-      if (d['properties']['name'] == initialState) return;
+      if (d['properties']['name'] == TrackerStore.initialState) return;
       svg.selectAll("path")
         .style("stroke", "#fff")
         .style("stroke-dasharray", "none")
@@ -169,12 +170,8 @@ class USMap extends React.PureComponent {
 
       _this.initialStateSVG = svg.selectAll("path")
         .filter((d, local) => {
-          return d["properties"]["name"] == initialState
+          return d["properties"]["name"] == TrackerStore.initialState
         }).style("stroke-width", (d) => {
-          _this.setState({
-            initialState: initialState, 
-            initialCoeff: parseFloat(d['properties']['value']).toFixed(2)
-          })
           return "4"
         })
         .style("stroke", "#f5b042").raise()
@@ -261,7 +258,48 @@ class USMap extends React.PureComponent {
     reaction(
       () => TrackerStore.initialState,
       (newState) => {
-        this.drawMap(newState)
+        // this.drawMap(newState)
+        this.svg.selectAll("path")
+          .style("stroke", "#fff")
+          .style("stroke-dasharray", "none")
+          .style("stroke-width", "1")
+
+        this.initialStateSVG = this.svg.selectAll("path")
+        .filter((d, local) => {
+          return d["properties"]["name"] == newState
+        })
+
+        this.initialStateSVG.style("stroke-width", "4")
+          .style("stroke", "#f5b042").raise()
+
+        this.setState({clicked: null})
+      }
+    )
+
+    reaction(
+      () => TrackerStore.alternativeModelIdx,
+      (newIdx) => {
+        // this.drawMap(newState)
+        if (!this.svg) return;
+
+        this.svg.selectAll("path")
+          .filter((d, local) => d["properties"]["name"] != TrackerStore.initialState)
+          .style("stroke", "#fff")
+          .style("stroke-dasharray", "none")
+          .style("stroke-width", "1")
+
+        if (!Number.isFinite(newIdx)) return;
+
+        this.svg.selectAll('path')
+          .filter((d, local) => {
+            return d["properties"]["name"] == MODEL_DATA[newIdx].location
+          })
+          .style("stroke-width", "4")
+          .style("stroke-dasharray", "5")
+          .style("stroke", "#f5b042").raise()
+
+        this.setState({clicked: MODEL_DATA[newIdx].location})
+        
       }
     )
 

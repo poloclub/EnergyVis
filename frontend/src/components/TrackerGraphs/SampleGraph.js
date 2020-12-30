@@ -29,9 +29,6 @@ import FormLabel from '@material-ui/core/FormLabel';
 import { observer } from "mobx-react"
 import TrackerStore from '../../stores/TrackerStore'
 
-import Timer10Icon from '@material-ui/icons/Timer10';
-import TimelapseIcon from '@material-ui/icons/Timelapse';
-
 const labelGenerator = (length, interval) => {
   const arr = []
   for (var i = 0; i < length; i++) {
@@ -40,35 +37,63 @@ const labelGenerator = (length, interval) => {
   return arr;
 }
 
+// TODO: Move a lot of this to another utils.js file, import from there.
 
-const getDataScaffold = (serverData, graphType, intervalType, 
+const co2Converter = (PUE, co2Factor, graphType) => graphType == 0 ? (kwh) => kwh * PUE * co2Factor : x => x;
+const cumulativeMap = (start, cumulative) => cumulative ? (sum => value => sum += value)(start) : x => x
+
+const sumDatasetEnergy = (serverData, graphKey, cumulative) => {
+  let mappedCpu = serverData["cpu"][graphKey]
+    .map(cumulativeMap(0, cumulative))
+
+  let mappedGpu = serverData["gpu"][graphKey]
+    .map(cumulativeMap(0, cumulative))
+
+  return mappedGpu.map(function (num, idx) {
+    return num + mappedCpu[idx];
+  })
+}
+
+
+const extrapolator = (data, extrapolation) => {
+  let regression = linearRegression(data)
+  var extrapolated_data = []
+
+
+  for (var i = 0; i < data.length - 1; i++) {
+    extrapolated_data.push(null)
+  }
+  
+  for (var i = data.length - 1; i < data.length + extrapolation; i++) {
+    extrapolated_data.push(regression["slope"] * i + regression["intercept"])
+  }
+
+  return extrapolated_data
+}
+
+const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType, 
                         PUE, hoveredState, cumulative, extrapolation) => {
 
-  if (!serverData) return {"data": {}, "options": {}};
-
+  const emptyGraph =  {"data": {}, "options": {}}
+  if (!Number.isFinite(modelIdx)) return emptyGraph;
+  const serverData = MODEL_DATA[modelIdx].serverData;
+  if (!serverData) return emptyGraph;
   if (!extrapolation) extrapolation = 0;
 
+  const originalCo2Converter = 
+    co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"], graphType)
+
+  const plotAlternatives = hoveredState || Number.isFinite(alternativeIdx);
+
+  const alternativeConverter = 
+    plotAlternatives && co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"], graphType)
+  
   const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
 
-  const co2Converter = (PUE, co2Factor) => graphType == 0 ? (kwh) => kwh * PUE * co2Factor : x => x;
-  const cumulativeMap = (start) => cumulative ? (sum => value => sum += value)(start) : x => x
-
-  const originalCo2Converter = 
-    co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"])
-  const alternativeConverter = 
-    hoveredState && co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"])
-
-  // sum cumulative func needs to be redefined
-  let mappedCpu = serverData["cpu"][graphKey]
-    .map(cumulativeMap(0))
-
-  let mappedGpu = serverData["gpu"][graphKey]
-    .map(cumulativeMap(0))
-
-  let originalSummedEnergy = mappedGpu.map(function (num, idx) {
-    return num + mappedCpu[idx];
-  })
+  let originalSummedEnergy = sumDatasetEnergy(serverData, graphKey, cumulative);
+  let alternativeSummedEnergy = Number.isFinite(alternativeIdx) ? 
+    sumDatasetEnergy(MODEL_DATA[alternativeIdx].serverData, graphKey, cumulative) : originalSummedEnergy;
 
   let datasets = [
     {
@@ -80,22 +105,13 @@ const getDataScaffold = (serverData, graphType, intervalType,
       pointRadius: 1.5,
       yAxisID: 'y-axis-1',
     },
-    // {
-    //   label: 'GPU Consumption (kWH)',
-    //   data: mappedGpu,
-    //   fill: false,
-    //   backgroundColor: 'rgb(54, 162, 235)',
-    //   borderColor: 'rgba(54, 162, 235, 0.5)',
-    //   pointRadius: 1.5,
-    //   yAxisID: 'y-axis-1',
-    // },
   ]
 
-  if (hoveredState) {
+  if (plotAlternatives) {
     datasets.push(
       {
         label: 'Alternative Consumption',
-        data: originalSummedEnergy.map(alternativeConverter),
+        data: alternativeSummedEnergy.map(alternativeConverter),
         fill: false,
         backgroundColor: 'rgb(245, 176, 66)',
         borderColor: 'rgba(245, 176, 66, 0.5)',
@@ -103,22 +119,6 @@ const getDataScaffold = (serverData, graphType, intervalType,
         yAxisID: 'y-axis-1',
       }
     )
-  }
-
-  let extrapolator = (data, extrapolation) => {
-    let regression = linearRegression(data)
-    var extrapolated_data = []
-
-
-    for (var i = 0; i < data.length - 1; i++) {
-      extrapolated_data.push(null)
-    }
-    
-    for (var i = data.length - 1; i < data.length + extrapolation; i++) {
-      extrapolated_data.push(regression["slope"] * i + regression["intercept"])
-    }
-
-    return extrapolated_data
   }
 
   if (extrapolation) {
@@ -136,11 +136,11 @@ const getDataScaffold = (serverData, graphType, intervalType,
     )
 
     
-    if (hoveredState) {
+    if (plotAlternatives) {
       datasets.push(
         {
           label: 'Extrapolated Alternative Consumption',
-          data: extrapolator(originalSummedEnergy.map(alternativeConverter), extrapolation),
+          data: extrapolator(alternativeSummedEnergy.map(alternativeConverter), extrapolation),
           borderDash: [10,5],
           fill: false,
           backgroundColor: 'rgb(245, 176, 66)',
@@ -150,20 +150,6 @@ const getDataScaffold = (serverData, graphType, intervalType,
         }
       )
     }
-  
-    // datasets.push(
-    //   {
-    //     label: 'Extrapolated GPU Consumption',
-    //     data: extrapolator(mappedGpu, extrapolation),
-    //     borderDash: [10,5],
-    //     fill: false,
-    //     backgroundColor: 'rgb(54, 162, 235)',
-    //     borderColor: 'rgba(54, 162, 235, 0.5)',
-    //     pointRadius: 1.5,
-    //     yAxisID: 'y-axis-1',
-    //   },
-    // )
-
   }
 
   const data = {
@@ -246,7 +232,7 @@ class SampleGraph extends React.PureComponent {
   }
 
   render() {
-    const dataScaffold = getDataScaffold(MODEL_DATA[TrackerStore.modelIdx].serverData, 
+    const dataScaffold = getDataScaffold(TrackerStore.modelIdx, TrackerStore.alternativeModelIdx,
       this.state.graphType, this.state.intervalType, TrackerStore.initialPUE, 
       TrackerStore.hoveredState, 
       this.state.cumulative, this.state.sliderVal)
@@ -286,14 +272,14 @@ class SampleGraph extends React.PureComponent {
                 valueLabelDisplay="auto"
               />
              
-               <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
+               {/* <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
                 <Pagination renderItem={(item) => { 
                   item.page--;
                   return <PaginationItem {...item} />
                 }} page={this.state.sliderVal + 1} count={this.state.sliderMax} 
                 onChange={(e, val) => { this.setState({sliderVal: val - 1, sliderMax: val * 2 + 20}) }}
                 size="large" showFirstButton showLastButton />
-               </div>
+               </div> */}
 
 
             </Grid>

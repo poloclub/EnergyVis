@@ -20,6 +20,7 @@ export const MODEL_DATA = [
         "epoch": [.5, 1, 1.5, 2, 2.5, 3]
       } 
     },
+    location: "Georgia"
   },
   {
     name: 'BERT base',
@@ -40,5 +41,6 @@ export const MODEL_DATA = [
         "epoch": [2, 2, 2, 2, 2, 2]
       } 
     },
+    location: "Wyoming"
   }
 ]

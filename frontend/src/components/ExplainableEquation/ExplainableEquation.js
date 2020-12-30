@@ -52,7 +52,7 @@ class ExplainableEquation extends React.PureComponent {
               <InboxIcon />
             </ListItemIcon> */}
             <ListItemText>
-              <BlockMath>{String.raw`\bm{y = \textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${TrackerStore.initialPUE}} \hspace{3pt}} [=] \hspace{3pt} \text{watts}`}</BlockMath>
+              <BlockMath>{String.raw`\bm{\textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${TrackerStore.initialPUE}} \hspace{3pt}} [=] \hspace{3pt} \text{watts}`}</BlockMath>
             </ListItemText>
             {this.state["eq1"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -75,7 +75,7 @@ class ExplainableEquation extends React.PureComponent {
               <InboxIcon />
             </ListItemIcon> */}
             <ListItemText>
-              <BlockMath>{String.raw`\bm{x = \textcolor{${colors[5]}}{\overline{p_{epoch}}} = \frac{\textcolor{${colors[7]}}{\sum_{i=1}^{I}} \textcolor{${colors[0]}}{p_{i}}}{\textcolor{${colors[7]}}{I}} \cdot \frac{t_{epoch}}{1000}} \hspace{3pt} [=] \hspace{3pt} \text{kilo-watt hours}`}</BlockMath>
+              <BlockMath>{String.raw`\bm{\textcolor{${colors[5]}}{\overline{p_{epoch}}} = \frac{\textcolor{${colors[7]}}{\sum_{i=1}^{I}} \textcolor{${colors[0]}}{p_{i}}}{\textcolor{${colors[7]}}{I}} \cdot \frac{t_{epoch}}{1000}} \hspace{3pt} [=] \hspace{3pt} \text{kilo-watt hours}`}</BlockMath>
             </ListItemText>
             {this.state["eq2"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -94,7 +94,7 @@ class ExplainableEquation extends React.PureComponent {
           </Collapse>
           <ListItem button onClick={() => this.handleClick("eq3")}>
             <ListItemText>
-              <BlockMath>{String.raw`\bm{z = \textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${NRELData[(TrackerStore.hoveredState || TrackerStore.initialState)]["co2_lb_kwh"].toFixed(2)}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}} \hspace{3pt} [=] \hspace{3pt} \text{pounds}`}</BlockMath>
+              <BlockMath>{String.raw`\bm{\textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${NRELData[(TrackerStore.hoveredState || TrackerStore.initialState)]["co2_lb_kwh"].toFixed(2)}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}} \hspace{3pt} [=] \hspace{3pt} \text{pounds}`}</BlockMath>
             </ListItemText>
             {this.state["eq3"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
