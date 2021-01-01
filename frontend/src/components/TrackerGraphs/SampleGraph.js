@@ -198,7 +198,7 @@ class SampleGraph extends React.PureComponent {
       intervalType: 1,
       sliderMax: 20,
       sliderVal: 0,
-      cumulative: false
+      cumulative: true
     };
     this.updateInterval = null;
   }
@@ -263,6 +263,7 @@ class SampleGraph extends React.PureComponent {
             <Grid item sm={12}>
               <FormLabel component="legend">Extrapolated Points</FormLabel>
 
+              <div style={{paddingLeft: '2%', paddingRight: '2%'}}>
               <Slider
                 min={0}
                 max={this.state.sliderMax}
@@ -271,6 +272,8 @@ class SampleGraph extends React.PureComponent {
                 onChangeCommitted={(e, val) => { this.setState({sliderMax: val * 2 + 20}) }}
                 valueLabelDisplay="auto"
               />
+              </div>
+
              
                {/* <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
                 <Pagination renderItem={(item) => { 
@@ -283,7 +286,7 @@ class SampleGraph extends React.PureComponent {
 
 
             </Grid>
-            <Grid item sm={4}>
+            {/* <Grid item sm={4}>
               <div>
                 <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Unit (Y-Axis)</FormLabel>
                 <ToggleButtonGroup
@@ -302,7 +305,7 @@ class SampleGraph extends React.PureComponent {
                   </ToggleButton>
                 </ToggleButtonGroup>
               </div>
-            </Grid>
+            </Grid> */}
             {/* <Grid item sm={4}>
               <div>
                 <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Interval (X-Axis)</FormLabel>
@@ -324,7 +327,7 @@ class SampleGraph extends React.PureComponent {
               </div>
 
             </Grid> */}
-            <Grid item sm={4}>
+            {/* <Grid item sm={4}>
               <div>
                 <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Cumulative Consumption</FormLabel>
                 <Grid style={{paddingTop: "6%", paddingLeft: "13.5%"}} component="label" container alignItems="center" spacing={1}>
@@ -336,7 +339,7 @@ class SampleGraph extends React.PureComponent {
                 </Grid>
               </div>
 
-            </Grid>
+            </Grid> */}
           </Grid>
       </div>
     );
