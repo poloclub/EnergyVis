@@ -13,11 +13,15 @@ import PaginationItem from '@material-ui/lab/PaginationItem';
 
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
+import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 
 import OfflineBoltOutlinedIcon from '@material-ui/icons/OfflineBoltOutlined';
 import PublicOutlinedIcon from '@material-ui/icons/PublicOutlined';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import Fade from '@material-ui/core/Fade';
+import Popper from '@material-ui/core/Popper';
+import SettingsIcon from '@material-ui/icons/Settings';
 
 import Switch from '@material-ui/core/Switch';
 
@@ -81,12 +85,12 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
   if (!extrapolation) extrapolation = 0;
 
   const originalCo2Converter = 
-    co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"], graphType)
+    co2Converter(PUE || TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"], graphType)
 
   const plotAlternatives = hoveredState || Number.isFinite(alternativeIdx);
 
   const alternativeConverter = 
-    plotAlternatives && co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"], graphType)
+    plotAlternatives && co2Converter(PUE || TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"], graphType)
   
   const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
@@ -180,7 +184,15 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
             labelString: intervalType == 0 ? 'Interval (seconds)' : 'Epoch'
           },
         },
-    ]
+      ]
+    },
+    legend: {
+      labels: {
+        filter: function(item, chart) {
+          // Logic to remove a particular legend item goes here
+          return !item.text.includes('Extrapolated');
+        }
+      }
     }
   }
 
@@ -198,7 +210,10 @@ class SampleGraph extends React.PureComponent {
       intervalType: 1,
       sliderMax: 20,
       sliderVal: 0,
-      cumulative: true
+      cumulative: true,
+      open: false,
+      anchorEl: null,
+      placement: ''
     };
     this.updateInterval = null;
   }
@@ -231,6 +246,14 @@ class SampleGraph extends React.PureComponent {
     this.setState({cumulative: event.target.checked})
   }
 
+  handleClick = (newPlacement) => (event) => {
+    this.setState({
+      anchorEl: event.currentTarget,
+      open: !this.state.open,
+      placement: newPlacement
+    })
+  };
+
   render() {
     const dataScaffold = getDataScaffold(TrackerStore.modelIdx, TrackerStore.alternativeModelIdx,
       this.state.graphType, this.state.intervalType, TrackerStore.initialPUE, 
@@ -239,6 +262,54 @@ class SampleGraph extends React.PureComponent {
     
     return (
       <div>
+          <Popper open={this.state.open} anchorEl={this.state.anchorEl} placement={this.state.placement} transition>
+            {({ TransitionProps }) => (
+              <Fade {...TransitionProps} timeout={350}>
+                <Paper>
+                  <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="body1">
+                    Settings
+                  </Typography>
+                  <Divider variant="middle" />
+                  <div style={{paddingLeft: '16px', paddingTop: '3px', paddingRight: '16px'}}>
+                  <Grid item sm={12}>
+                  <div>
+                    <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Unit (Y-Axis)</FormLabel>
+                    <ToggleButtonGroup
+                      value={this.state.graphType}
+                      exclusive
+                      onChange={this.handleGraphChange}
+                      size="small"
+                    >
+                      <ToggleButton style={{textTransform: "none"}} value={0}>
+                        <PublicOutlinedIcon />
+                        <span style={{paddingLeft: '.2em'}}>Carbon (CO<sub>2</sub>)</span>
+                      </ToggleButton>
+                      <ToggleButton style={{textTransform: "none"}} value={1}>
+                        <OfflineBoltOutlinedIcon />
+                        <span style={{paddingLeft: '.2em'}}>Electricity (kWH)</span>
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  </div>
+                </Grid>
+
+                <Grid style={{paddingTop: '4%'}} item sm={12}>
+                  <div>
+                    <FormLabel style={{paddingBottom: '0%'}} component="legend">Cumulative Consumption</FormLabel>
+                    <Grid component="label" container alignItems="center">
+                      <Grid item>Off</Grid>
+                      <Grid item>
+                        <Switch checked={this.state.cumulative} onChange={this.handleCumulativeSwitch} name="checkedC" />
+                      </Grid>
+                      <Grid item>On</Grid>
+                    </Grid>
+                  </div>
+
+                </Grid>
+                </div>
+                </Paper>
+              </Fade>
+            )}
+          </Popper>
           <Grid container>
             <Grid item sm={6}>
               <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
@@ -247,7 +318,8 @@ class SampleGraph extends React.PureComponent {
             </Grid>
             <Grid item sm={6}>
             <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
-              <HelpOutlineIcon />
+              {/* <HelpOutlineIcon /> */}
+              <SettingsIcon onClick={this.handleClick('bottom-end')} />
             </IconButton>
             </Grid>
           </Grid>
@@ -284,62 +356,7 @@ class SampleGraph extends React.PureComponent {
                 size="large" showFirstButton showLastButton />
                </div> */}
 
-
             </Grid>
-            {/* <Grid item sm={4}>
-              <div>
-                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Unit (Y-Axis)</FormLabel>
-                <ToggleButtonGroup
-                  value={this.state.graphType}
-                  exclusive
-                  onChange={this.handleGraphChange}
-                  size="small"
-                >
-                  <ToggleButton style={{textTransform: "none"}} value={0}>
-                    <PublicOutlinedIcon />
-                    <span style={{paddingLeft: '.2em'}}>Carbon (CO<sub>2</sub>)</span>
-                  </ToggleButton>
-                  <ToggleButton style={{textTransform: "none"}} value={1}>
-                    <OfflineBoltOutlinedIcon />
-                    <span style={{paddingLeft: '.2em'}}>Electricity (kWH)</span>
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </div>
-            </Grid> */}
-            {/* <Grid item sm={4}>
-              <div>
-                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Measuring Interval (X-Axis)</FormLabel>
-                <ToggleButtonGroup
-                  value={this.state.intervalType}
-                  exclusive
-                  onChange={this.handleIntervalChange}
-                  size="small"
-                >
-                  <ToggleButton style={{textTransform: "none"}} value={0}>
-                    <Timer10Icon />
-                    <span style={{paddingLeft: '.2em'}}>Every 10s</span>
-                  </ToggleButton>
-                  <ToggleButton style={{textTransform: "none"}} value={1}>
-                    <TimelapseIcon />
-                    <span style={{paddingLeft: '.2em'}}>Every Epoch</span>
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </div>
-
-            </Grid> */}
-            {/* <Grid item sm={4}>
-              <div>
-                <FormLabel style={{paddingBottom: '1.5%'}} component="legend">Cumulative Consumption</FormLabel>
-                <Grid style={{paddingTop: "6%", paddingLeft: "13.5%"}} component="label" container alignItems="center" spacing={1}>
-                  <Grid item>Off</Grid>
-                  <Grid item>
-                    <Switch checked={this.state.cumulative} onChange={this.handleCumulativeSwitch} name="checkedC" />
-                  </Grid>
-                  <Grid item>On</Grid>
-                </Grid>
-              </div>
-
-            </Grid> */}
           </Grid>
       </div>
     );

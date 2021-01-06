@@ -14,10 +14,10 @@ export const MODEL_DATA = [
     },
     serverData: {
       "cpu": { 
-        "epoch" : [1, 2, 3, 4, 5, 6]
+        "epoch" : [.05, .05, .05, .05, .05, .05]
       },
       "gpu": {
-        "epoch": [.5, 1, 1.5, 2, 2.5, 3]
+        "epoch": [.05, .05, .05, .05, .05, .05]
       } 
     },
     location: "Georgia"
@@ -35,10 +35,10 @@ export const MODEL_DATA = [
     },
     serverData: {
       "cpu": { 
-        "epoch" : [1, 1, 1, 1, 1, 1]
+        "epoch" : [.1, .1, .1, .1, .1, .1]
       },
       "gpu": {
-        "epoch": [2, 2, 2, 2, 2, 2]
+        "epoch": [.1, .1, .1, .1, .1, .1]
       } 
     },
     location: "Wyoming"

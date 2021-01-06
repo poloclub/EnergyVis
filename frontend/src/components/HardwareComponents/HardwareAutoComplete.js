@@ -7,8 +7,6 @@ import match from 'autosuggest-highlight/match';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 
-
-
 export default function HardwareAutoComplete() {
   return (
     <Grid container>

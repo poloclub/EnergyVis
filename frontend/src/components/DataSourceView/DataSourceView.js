@@ -78,16 +78,28 @@ class DataSourceView extends React.PureComponent {
         ))}
         </StyledToggleButtonGroup>
 
+
+
+
         { this.state.view == 'list' && 
-          <Button
-            variant="outlined"
-            color="primary"
-            type="file"
-            style={{marginTop: '8px', marginBottom: '8px'}}
-            startIcon={<PublishIcon />}
-          >
-            Import
-          </Button>
+          <div>
+            <input
+              accept=".json"
+              style={{ display: 'none' }}
+              id="raised-button-file"
+              type="file"
+            />
+            <label htmlFor="raised-button-file">
+              <Button variant="raised" 
+              style={{height: "calc(100% - 16px)", marginTop: '8px'}} 
+              startIcon={<PublishIcon />} 
+              variant="outlined"
+              color="primary"
+              component="span">
+                Upload
+              </Button>
+            </label> 
+          </div>
         }
 
         { this.state.view != 'list' &&

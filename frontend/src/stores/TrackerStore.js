@@ -13,7 +13,7 @@ export class TrackerStore {
     "cpu" : {}
   };
   @observable initialState = "Georgia"
-  @observable initialPUE = 1.58
+  @observable initialPUE = 1.59
   @observable hoveredState = null;
   // @observable clickedState = "Georgia"
   @observable modelIdx = 0;
@@ -25,7 +25,7 @@ export class TrackerStore {
   };
 
   startState = "Georgia";
-  startPUE = 1.58;
+  startPUE = 1.59;
 
   constructor() {
     makeObservable(this);
@@ -70,7 +70,9 @@ export class TrackerStore {
     }
 
     this.modelIdx = newIdx
-    this.initialComponents = Number.isFinite(this.modelIdx) ? MODEL_DATA[this.modelIdx]["components"] : copyObject(this.startComponents)
+    this.initialComponents = Number.isFinite(this.modelIdx) ? 
+      MODEL_DATA[this.modelIdx]["components"] : copyObject(this.startComponents)
+    this.startComponents = copyObject(this.initialComponents)
     this.alternativeModelIdx = null
     this.hoveredState = null
     if (Number.isFinite(this.modelIdx)) this.initialState = MODEL_DATA[newIdx].location
@@ -89,6 +91,8 @@ export class TrackerStore {
     
     this.alternativeModelIdx = newIdx
     this.hoveredState = MODEL_DATA[newIdx].location
+    this.initialComponents = Number.isFinite(this.alternativeModelIdx) ? 
+      MODEL_DATA[this.alternativeModelIdx]["components"] : copyObject(this.startComponents)
 
   } 
 
@@ -118,8 +122,11 @@ export class TrackerStore {
     this.initialPUE = newPUE
   }
 
-  @action updateHardware () {
-
+  @action updateHardware (type, component, val) {
+    console.log("UPDATING HEREEE!! ")
+    console.log(type, component, val)
+    // props.updateQuantityHandler("gpu", component, val)
+    this.initialComponents[type][component] = val
   }
 
 }

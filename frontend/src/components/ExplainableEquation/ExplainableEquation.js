@@ -62,9 +62,9 @@ class ExplainableEquation extends React.PureComponent {
                 <ListItemText>
                   <Typography variant="body1">
                     First, we take measurements of <span style={{fontWeight: 600, color: colors[0]}}>instantaneous power usage</span>, in watts, from our hardware at a fixed interval (10s).
-                    Instantaneous power measurments are the sum of of our <span style={{fontWeight: 600, color: colors[3]}}>chipset (CPU and DRAM)</span> and <span style={{fontWeight: 600, color: colors[2]}}>our graphics cards</span>.
-                    Finally, we multiply by a <span style={{fontWeight: 600, color: colors[6]}}>PUE coefficient</span>: this factor adjusts for electricity used by other infrastructure, like cooling and lighting at a datacenter.
-                    We use a default value of 1.53, from et al.
+                    <span style={{fontWeight: 600, color: colors[0]}}> These measurments</span> are the sum of of our <span style={{fontWeight: 600, color: colors[3]}}>chipset (CPU and DRAM)</span> and <span style={{fontWeight: 600, color: colors[2]}}>our graphics card</span> instantaneous power usages.
+                    Then, we multiply by a <span style={{fontWeight: 600, color: colors[6]}}>PUE coefficient</span>: this factor adjusts for electricity used by other infrastructure, like cooling and lighting at a datacenter.
+                    We use a <span style={{fontWeight: 600, color: colors[6]}}>default value of 1.59</span> from The Uptime Institute Annual Data Center Survey (Ascierto, 2020).
                   </Typography>
                 </ListItemText>
               </ListItem>

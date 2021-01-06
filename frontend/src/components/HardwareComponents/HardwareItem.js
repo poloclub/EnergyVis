@@ -11,6 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import ToysIcon from '@material-ui/icons/Toys';
+import Typography from '@material-ui/core/Typography';
 
 class HardwareItem extends React.Component {
     render () {
@@ -24,7 +25,23 @@ class HardwareItem extends React.Component {
                 </ListItemAvatar>
                 <ListItemText
                     primary={this.props.hardwareType + " - " + this.props.hardwareName}
-                    secondary={"Quantity: " + this.props.quantity}
+                    secondary={<React.Fragment>
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          color="textPrimary"
+                        >
+                          {"Quantity: " + this.props.original }
+                        </Typography>
+                        <br />
+                        { Number.isFinite(this.props.quantity) && this.props.quantity != this.props.original && <Typography
+                          component="span"
+                          variant="caption"
+                          style={{color: '#f5b042', fontWeight: 'bold'}}
+                        >
+                          {"Alternative: " + this.props.quantity}
+                        </Typography> } 
+                      </React.Fragment>}
                 />
                 <ListItemSecondaryAction>
                 <IconButton onClick={() => { this.props.updateQuantityHandler(this.props.quantity + 1) }} edge="end" aria-label="add">
@@ -32,7 +49,7 @@ class HardwareItem extends React.Component {
                 </IconButton>
                 <IconButton 
                     onClick={() => { 
-                        this.props.updateQuantityHandler(this.props.quantity >= 2 ? this.props.quantity - 1 : this.props.quantity) 
+                        this.props.updateQuantityHandler(this.props.quantity > 0 ? this.props.quantity - 1 : this.props.quantity) 
                     }} edge="end" aria-label="remove">
                     <RemoveIcon />
                 </IconButton>

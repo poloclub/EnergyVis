@@ -367,11 +367,11 @@ class USMap extends React.PureComponent {
             Your Region
           </Typography>
         </Grid>
-        <Grid item sm={6}>
+        {/* <Grid item sm={6}>
         <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
           <HelpOutlineIcon />
         </IconButton>
-        </Grid>
+        </Grid> */}
       </Grid>
       <Divider variant="middle" />
       <Grid style={{paddingTop: '1%'}} container>
