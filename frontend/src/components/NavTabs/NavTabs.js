@@ -5,6 +5,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import TrackerPage from '../TrackerPage/TrackerPage'
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
 
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -73,35 +75,49 @@ export default function NavTabs() {
     setValue(newValue);
   };
 
+  // return (
+  //   <div className={classes.root}>
+  //     <AppBar style={{boxShadow: 'none', marginBottom: '8px'}} position="static">
+  //       <Tabs
+  //         variant="fullWidth"
+  //         value={value}
+  //         onChange={handleChange}
+  //         aria-label="nav tabs example"
+  //       >
+  //         <LinkTab label="Tracker" href="/tracker" {...a11yProps(0)} />
+  //         <LinkTab label="Editor" href="/editor" {...a11yProps(1)} />
+  //         <LinkTab label="About" href="/article" {...a11yProps(2)} />
+  //         {/* <FormControlLabel
+  //           control={<Switch />}
+  //           label="Counterfactual Mode"
+  //         /> */}
+  //       </Tabs>
+
+
+  //     </AppBar>
+  //     <TabPanel value={value} index={0}>
+  //         <TrackerPage />
+  //     </TabPanel>
+  //     <TabPanel value={value} index={1}>
+  //       {/* Editor */}
+  //     </TabPanel>
+  //     <TabPanel value={value} index={2}>
+  //       {/* About */}
+  //     </TabPanel>
+  //   </div>
+  // );
   return (
     <div className={classes.root}>
       <AppBar style={{boxShadow: 'none', marginBottom: '8px'}} position="static">
-        <Tabs
-          variant="fullWidth"
-          value={value}
-          onChange={handleChange}
-          aria-label="nav tabs example"
-        >
-          <LinkTab label="Tracker" href="/tracker" {...a11yProps(0)} />
-          <LinkTab label="Editor" href="/editor" {...a11yProps(1)} />
-          <LinkTab label="About" href="/article" {...a11yProps(2)} />
-          {/* <FormControlLabel
-            control={<Switch />}
-            label="Counterfactual Mode"
-          /> */}
-        </Tabs>
-
-
+        <Toolbar style={{minHeight: '32px'}}>
+          <Typography style={{fontSize: '1.5rem', textTransform: 'none', lineHeight: '2.1'}} variant="overline">
+            EnergyVis <span style={{fontSize: '.75rem'}}>Interactive Energy Tracking for ML Models</span>
+          </Typography>
+          
+        </Toolbar>
       </AppBar>
-      <TabPanel value={value} index={0}>
-          <TrackerPage />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        {/* Editor */}
-      </TabPanel>
-      <TabPanel value={value} index={2}>
-        {/* About */}
-      </TabPanel>
+      <TrackerPage />
     </div>
-  );
+    
+  )
 }
