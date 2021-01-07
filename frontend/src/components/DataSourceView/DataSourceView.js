@@ -8,6 +8,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import LinkIcon from '@material-ui/icons/Link';
 
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import TextField from '@material-ui/core/TextField';
@@ -47,8 +48,11 @@ class DataSourceView extends React.PureComponent {
   render() {
     return (
       
-      <Grid style={{paddingLeft: '12px', width: 'calc(100% + 8px)'}} container spacing={2}>
-        <StyledToggleButtonGroup
+      <Grid style={{paddingLeft: '12px', width: 'calc(100% + 8px)'}} justify="space-between" container spacing={2}>
+
+        <Grid xs={8} item style={{padding: '0px'}}>
+
+        {this.state.view == 'list' && <StyledToggleButtonGroup
           size="small"
           value={TrackerStore.modelIdx}
           exclusive
@@ -76,13 +80,33 @@ class DataSourceView extends React.PureComponent {
             </Typography>
           </ToggleButton>
         ))}
-        </StyledToggleButtonGroup>
+        </StyledToggleButtonGroup> }
 
-
-
+        { this.state.view != 'list' &&
+          <Grid container>
+            <Grid item style={{marginRight: '8px', marginTop: '8px', marginLeft: '8px'}} xs={7}>
+              <TextField
+                style={{width: '100%'}}
+                id="outlined-helperText"
+                label="Enter the training URL here!"
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                color="primary"
+                style={{height: 'calc(100% - 8px)', marginTop: '8px'}}
+                startIcon={<GetAppIcon />}
+              >
+                Export Energy Profile
+              </Button>
+            </Grid>
+          </Grid>
+        }
 
         { this.state.view == 'list' && 
-          <div>
+          <div style={{display: 'inline'}}>
             <input
               accept=".json"
               style={{ display: 'none' }}
@@ -91,39 +115,19 @@ class DataSourceView extends React.PureComponent {
             />
             <label htmlFor="raised-button-file">
               <Button variant="raised" 
-              style={{height: "calc(100% - 16px)", marginTop: '8px'}} 
+              style={{height: "calc(100% - 16px)", marginBottom: '8px'}} 
               startIcon={<PublishIcon />} 
               variant="outlined"
               color="primary"
               component="span">
-                Upload
+                Import Energy Profile
               </Button>
             </label> 
           </div>
         }
 
-        { this.state.view != 'list' &&
-          <Grid xs={8} item>
-            <TextField
-              style={{width: '100%'}}
-              id="outlined-helperText"
-              label="https://"
-              helperText="Enter the training URL here!"
-              variant="outlined"
-            />
-          </Grid>
-        }
 
-        { this.state.view != "list" && 
-          <Button
-            variant="outlined"
-            color="primary"
-            style={{marginTop: '8px', marginBottom: '8px'}}
-            startIcon={<GetAppIcon />}
-          >
-            export
-          </Button>
-        }
+        </Grid>
 
         <Grid item>
           <ToggleButtonGroup style={{backgroundColor: 'white'}} value={this.state.view} exclusive onChange={this.handleChange.bind(this)}>
@@ -131,7 +135,7 @@ class DataSourceView extends React.PureComponent {
               <FindInPageIcon />
             </ToggleButton>
             <ToggleButton value="module" aria-label="module">
-              <HttpIcon />
+              <LinkIcon />
             </ToggleButton>
           </ToggleButtonGroup>
         </Grid>
