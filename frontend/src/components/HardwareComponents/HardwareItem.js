@@ -21,7 +21,7 @@ class HardwareItem extends React.Component {
                 <ListItemAvatar>
                 <Avatar>
                     {this.props.hardwareType == "CPU" && <MemoryIcon />}
-                    {this.props.hardwareType == "GPU" && <ToysIcon />}
+                    {this.props.hardwareType == "GPU" && <LayersIcon />}
                 </Avatar>
                 </ListItemAvatar>
                 <ListItemText

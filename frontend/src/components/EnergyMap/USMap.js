@@ -364,7 +364,7 @@ class USMap extends React.PureComponent {
       <Grid container>
         <Grid item sm={6}>
           <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-            Your Region
+            Your Region's Carbon to Energy Production
           </Typography>
         </Grid>
         {/* <Grid item sm={6}>
@@ -385,7 +385,7 @@ class USMap extends React.PureComponent {
       </Grid>
       <Grid container>
         <Grid item sm={6}>
-          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / kWh - higher is worse</FormLabel>
+          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / kWh - lower is better</FormLabel>
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>

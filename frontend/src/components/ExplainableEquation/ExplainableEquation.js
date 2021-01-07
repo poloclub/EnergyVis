@@ -49,7 +49,7 @@ class ExplainableEquation extends React.PureComponent {
     return (
       <div>
         <Typography style={{paddingLeft: '16px', paddingTop: '1%'}} variant="h6" gutterBottom>
-          Calculating Your Emissions
+          How Your CO<sub>2</sub> Emissions are Calculated
         </Typography>
         <Divider variant="middle" />
 
@@ -60,10 +60,10 @@ class ExplainableEquation extends React.PureComponent {
         >
           <ListItem button onClick={() => this.handleClick("eq1")}>
           <ListItemText>
-              Total Instantaneous Power
+              1. Total Instantaneous Power
             </ListItemText>
             <ListItemText>
-              <BlockMath>{String.raw`\bm{\textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${TrackerStore.initialPUE.toFixed(2)}} \hspace{3pt}}`}</BlockMath>
+              <BlockMath>{String.raw`\textcolor{${colors[0]}}{p_{i}} = (\textcolor{${colors[3]}}{p_{chipset}} + \textcolor{${colors[2]}}{\sum_{g=1}^{G} p_{g}} \thinspace ) \cdot \textcolor{${colors[6]}}{${TrackerStore.initialPUE.toFixed(2)}} \hspace{3pt}`}</BlockMath>
             </ListItemText>
             {this.state["eq1"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -106,10 +106,10 @@ class ExplainableEquation extends React.PureComponent {
               <InboxIcon />
             </ListItemIcon> */}
             <ListItemText>
-              Epoch Power Consumption
+              2. Epoch Power Consumption
             </ListItemText>
             <ListItemText>
-              <BlockMath>{String.raw`\bm{\textcolor{${colors[5]}}{\overline{p_{epoch}}} = \frac{\textcolor{${colors[7]}}{\sum_{i=1}^{I}} \textcolor{${colors[0]}}{p_{i}}}{\textcolor{${colors[7]}}{I}} \cdot \frac{t_{epoch}}{1000}} \hspace{3pt}`}</BlockMath>
+              <BlockMath>{String.raw`\textcolor{${colors[5]}}{\overline{p_{epoch}}} = \frac{\textcolor{${colors[7]}}{\sum_{i=1}^{I}} \textcolor{${colors[0]}}{p_{i}}}{\textcolor{${colors[7]}}{I}} \cdot \frac{t_{epoch}}{1000}`}</BlockMath>
             </ListItemText>
             {this.state["eq2"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
@@ -128,10 +128,10 @@ class ExplainableEquation extends React.PureComponent {
           </Collapse>
           <ListItem button onClick={() => this.handleClick("eq3")}>
             <ListItemText>
-              CO<sub>2</sub> Emissions
+              3. CO<sub>2</sub> Emissions
             </ListItemText>
             <ListItemText>
-              <BlockMath>{String.raw`\bm{\textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${NRELData[(TrackerStore.hoveredState || TrackerStore.initialState)]["co2_lb_kwh"].toFixed(2)}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}} \hspace{3pt}`}</BlockMath>
+              <BlockMath>{String.raw`\textcolor{${colors[1]}}{\mathrm{CO}_{2} \mathrm{e}}= \textcolor{${colors[4]}}{${NRELData[(TrackerStore.hoveredState || TrackerStore.initialState)]["co2_lb_kwh"].toFixed(2)}} \cdot \textcolor{${colors[5]}}{\overline{p_{epoch}}}`}</BlockMath>
             </ListItemText>
             {this.state["eq3"] ? <ExpandLess /> : <ExpandMore />}
           </ListItem>

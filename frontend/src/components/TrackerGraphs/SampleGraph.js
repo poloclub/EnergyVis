@@ -111,7 +111,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
 
   let datasets = [
     {
-      label: 'Consumption ' + (graphType == 0 ? '(CO2)' : '(kWH)'),
+      label: (graphType == 0 ? 'Carbon Emissions (CO2 lbs)' : 'Electricity (kWH)'),
       data: originalSummedEnergy.map(originalCo2Converter),
       fill: false,
       backgroundColor: graphType == 0 ? 'rgb(45, 177, 93)' : 'rgb(255, 99, 132)',
@@ -181,7 +181,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
           id: 'y-axis-1',
           scaleLabel: {
             display: true,
-            labelString: graphType == 0 ? 'Carbon (CO2)' : 'Kilowatt Hours (kWH)'
+            labelString: graphType == 0 ? 'Carbon Emissions (CO2 lbs)' : 'Kilowatt Hours (kWH)'
           }        
         },
       ],
@@ -323,7 +323,7 @@ class SampleGraph extends React.PureComponent {
           <Grid container>
             <Grid item sm={6}>
               <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-                Experiment Consumption Graph
+                Your Model’s {this.state.graphType == 0 ? <span>CO<sub>2</sub> Emissions (CO2 lbs)</span> : <span>Enery Consumption (kWh)</span>}
               </Typography>
             </Grid>
             <Grid item sm={6}>
@@ -339,22 +339,22 @@ class SampleGraph extends React.PureComponent {
           <div style={{marginTop: '2.5%', marginLeft: '2.5%', marginRight: '2.5%'}}>
             <Line data={dataScaffold["data"]} options={dataScaffold["options"]}/>
             <div style={{textAlign: 'center'}}>
-              <p style={{margin: 0, fontSize: '12px'}}>Epochs  
+              <p style={{margin: 0, fontSize: '12px'}}>Epochs ({this.state.sliderVal} 
               <div style={upDownStyles}>
               <IconButton 
-              onClick={() => {this.setState({sliderVal: this.state.sliderVal + 1})}}
+              onClick={() => {this.setState({sliderVal: this.state.sliderVal + 10})}}
               style={{padding: '0', width: '12px', height: '12px'}}>
                 <ArrowDropUpIcon  />
               </IconButton>
               <br />
               <IconButton onClick={() => {
-                  if (this.state.sliderVal > 0)
-                    this.setState({sliderVal: this.state.sliderVal - 1})
+                  if (this.state.sliderVal >= 10)
+                    this.setState({sliderVal: this.state.sliderVal - 10})
                 }} 
                 style={{padding: '0', width: '12px', height: '12px'}} >
                 <ArrowDropDownIcon />
               </IconButton>
-              </div> {this.state.sliderVal} extrapolated</p>
+              </div> extrapolated)</p>
             </div>
             
           </div>
