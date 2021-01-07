@@ -10,6 +10,8 @@ import { linearRegression } from '../../utils/regression'
 import Slider from '@material-ui/core/Slider';
 import Pagination from '@material-ui/lab/Pagination';
 import PaginationItem from '@material-ui/lab/PaginationItem';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
@@ -32,6 +34,14 @@ import FormLabel from '@material-ui/core/FormLabel';
 
 import { observer } from "mobx-react"
 import TrackerStore from '../../stores/TrackerStore'
+
+const upDownStyles = {
+  display: "inline-block",
+  fontSize: "6px",
+  lineHeight: "6px",
+  verticalAlign: "middle",
+  paddingLeft: '3.5px'
+}
 
 const labelGenerator = (length, interval) => {
   const arr = []
@@ -180,7 +190,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
           display: true,
           id: 'x-axis-1',
           scaleLabel: {
-            display: true,
+            display: false,
             labelString: intervalType == 0 ? 'Interval (seconds)' : 'Epoch'
           },
         },
@@ -326,12 +336,31 @@ class SampleGraph extends React.PureComponent {
 
           <Divider variant="middle" />
 
-          <div style={{margin: '2.5%'}}>
+          <div style={{marginTop: '2.5%', marginLeft: '2.5%', marginRight: '2.5%'}}>
             <Line data={dataScaffold["data"]} options={dataScaffold["options"]}/>
+            <div style={{textAlign: 'center'}}>
+              <p style={{margin: 0, fontSize: '12px'}}>Epochs  
+              <div style={upDownStyles}>
+              <IconButton 
+              onClick={() => {this.setState({sliderVal: this.state.sliderVal + 1})}}
+              style={{padding: '0', width: '12px', height: '12px'}}>
+                <ArrowDropUpIcon  />
+              </IconButton>
+              <br />
+              <IconButton onClick={() => {
+                  if (this.state.sliderVal > 0)
+                    this.setState({sliderVal: this.state.sliderVal - 1})
+                }} 
+                style={{padding: '0', width: '12px', height: '12px'}} >
+                <ArrowDropDownIcon />
+              </IconButton>
+              </div> {this.state.sliderVal} extrapolated</p>
+            </div>
+            
           </div>
 
 
-          <Grid style={{paddingLeft: "3%", paddingRight: "3%"}} container spacing={2}>
+          {/* <Grid style={{paddingLeft: "3%", paddingRight: "3%"}} container spacing={2}>
             <Grid item sm={12}>
               <FormLabel component="legend">Extrapolated Points</FormLabel>
 
@@ -347,17 +376,17 @@ class SampleGraph extends React.PureComponent {
               </div>
 
              
-               {/* <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
+               <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
                 <Pagination renderItem={(item) => { 
                   item.page--;
                   return <PaginationItem {...item} />
                 }} page={this.state.sliderVal + 1} count={this.state.sliderMax} 
                 onChange={(e, val) => { this.setState({sliderVal: val - 1, sliderMax: val * 2 + 20}) }}
                 size="large" showFirstButton showLastButton />
-               </div> */}
+               </div>
 
             </Grid>
-          </Grid>
+          </Grid> */}
       </div>
     );
   }

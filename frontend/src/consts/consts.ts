@@ -2,7 +2,7 @@ export const SERVER_URI = window.location.href.includes("localhost") ? "http://l
 
 export const MODEL_DATA = [
   {
-    name: 'Transfomer Base',
+    name: 'Transfomer',
     author: 'Vaswani et al. 2017',
     components: {
       "cpu": {
@@ -23,7 +23,7 @@ export const MODEL_DATA = [
     location: "Georgia"
   },
   {
-    name: 'BERT base',
+    name: 'BERT',
     author: 'Devlin et al. 2018',
     components: {
       "cpu": {

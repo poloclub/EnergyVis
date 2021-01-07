@@ -187,7 +187,7 @@ class USMap extends React.PureComponent {
       }
 
       // add a legend
-      var w = 140, h = 200;
+      var w = 70, h = 200;
       d3.selectAll('#legend').remove();
       var key = d3.select("#energymap")
         .append("svg")
@@ -215,7 +215,7 @@ class USMap extends React.PureComponent {
         .attr("stop-opacity", 1);
 
       key.append("rect")
-        .attr("width", w - 100)
+        .attr("width", 20)
         .attr("height", h)
         .style("fill", "url(#gradient)")
         .attr("transform", "translate(0,3)");
@@ -228,7 +228,7 @@ class USMap extends React.PureComponent {
 
       key.append("g")
         .attr("class", "y axis")
-        .attr("transform", "translate(41,3)")
+        .attr("transform", "translate(21, 3)")
         .call(yAxis)
 
       key.attr("height", h + 20)

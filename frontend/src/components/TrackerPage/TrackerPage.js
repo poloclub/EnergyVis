@@ -18,7 +18,7 @@ class TrackerPage extends React.Component {
   }
 
   render() {
-    const firstRowStyle = {height: "500px", marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%', marginBottom: '2%'}
+    const firstRowStyle = {height: "500px", marginTop: "2%", marginLeft: "4px", marginRight: '12px', marginBottom: '6px'}
     return (
       <div>
 
@@ -27,7 +27,7 @@ class TrackerPage extends React.Component {
 
         <div className="split-container">
           <div id="col-1">
-            <Paper style={{marginTop: "2%", marginLeft: "2.5%", marginRight: '2.5%', marginBottom: '2%'}}>
+            <Paper style={{marginTop: "2%", marginLeft: "12px", marginRight: '4px', marginBottom: '2%'}}>
             <Grid container>
               <Grid item xs>
                 <SampleGraph />
@@ -51,7 +51,7 @@ class TrackerPage extends React.Component {
             </Grid>
             <Grid container>
               <Grid item xs>
-                <Paper style={{marginLeft: "2.5%", marginRight: '2.5%', marginTop: "2%", marginBottom: '2%'}}>
+                <Paper style={{marginLeft: "4px", marginRight: '12px', marginBottom: '2%'}}>
                   <HardwareView />
                     {
                     // updateQuantityHandler={(region, component, quantity) => {

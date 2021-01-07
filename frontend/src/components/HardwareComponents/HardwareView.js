@@ -44,7 +44,7 @@ class HardwareView extends React.PureComponent {
     console.log("RENDERING")
 
     return (<div>
-      <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
+      {/* <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
         Your PUE Coefficient
       </Typography>
       <Divider variant="middle" />
@@ -64,9 +64,9 @@ class HardwareView extends React.PureComponent {
             if (event.target.value >= 0) TrackerStore.setPUE(event.target.value)
           }}
         />
-      </div>
+      </div> */}
   
-      <Typography style={{paddingLeft: '16px'}} variant="h6" gutterBottom>
+      <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
           Your Hardware
       </Typography>
   

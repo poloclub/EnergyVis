@@ -3,6 +3,7 @@ import React from 'react';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import LayersIcon from '@material-ui/icons/Layers';
+import MemoryIcon from '@material-ui/icons/Memory';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
@@ -19,7 +20,7 @@ class HardwareItem extends React.Component {
             <ListItem>
                 <ListItemAvatar>
                 <Avatar>
-                    {this.props.hardwareType == "CPU" && <LayersIcon />}
+                    {this.props.hardwareType == "CPU" && <MemoryIcon />}
                     {this.props.hardwareType == "GPU" && <ToysIcon />}
                 </Avatar>
                 </ListItemAvatar>

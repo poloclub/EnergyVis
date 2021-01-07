@@ -109,9 +109,9 @@ export default function NavTabs() {
   return (
     <div className={classes.root}>
       <AppBar style={{boxShadow: 'none', marginBottom: '8px'}} position="static">
-        <Toolbar style={{minHeight: '32px'}}>
-          <Typography style={{fontSize: '1.5rem', textTransform: 'none', lineHeight: '2.1'}} variant="overline">
-            EnergyVis <span style={{fontSize: '.75rem'}}>Interactive Energy Tracking for ML Models</span>
+        <Toolbar style={{paddingLeft: '12px', minHeight: '32px'}}>
+          <Typography style={{letterSpacing: '0', fontSize: '2rem', textTransform: 'none', lineHeight: '2.1', fontWeight: '900'}} variant="overline">
+            EnergyVis <span style={{fontSize: '2rem', fontWeight: '200'}}>Interactive Energy Tracking for ML Models</span>
           </Typography>
           
         </Toolbar>

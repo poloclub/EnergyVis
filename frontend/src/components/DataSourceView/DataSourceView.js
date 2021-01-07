@@ -47,7 +47,7 @@ class DataSourceView extends React.PureComponent {
   render() {
     return (
       
-      <Grid style={{width: 'calc(100% + 8px)'}} container justify="center" spacing={2}>
+      <Grid style={{paddingLeft: '12px', width: 'calc(100% + 8px)'}} container spacing={2}>
         <StyledToggleButtonGroup
           size="small"
           value={TrackerStore.modelIdx}
@@ -68,9 +68,9 @@ class DataSourceView extends React.PureComponent {
                 }
               }}
               value={idx}>
-            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+            {/* <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
               { value.author }
-            </Typography>
+            </Typography> */}
             <Typography variant="h5" component="h2">
               { value.name }
             </Typography>
@@ -126,7 +126,7 @@ class DataSourceView extends React.PureComponent {
         }
 
         <Grid item>
-          <ToggleButtonGroup style={{backgroundColor: 'white'}} orientation="vertical" value={this.state.view} exclusive onChange={this.handleChange.bind(this)}>
+          <ToggleButtonGroup style={{backgroundColor: 'white'}} value={this.state.view} exclusive onChange={this.handleChange.bind(this)}>
             <ToggleButton value="list" aria-label="list">
               <FindInPageIcon />
             </ToggleButton>
