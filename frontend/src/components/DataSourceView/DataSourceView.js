@@ -31,13 +31,23 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 }))(ToggleButtonGroup);
 
 
+const getButtonStyling = (idx, alternativeIdx, modelIdx) => {
+  const styling = {
+    textTransform: 'none', display: 'block', textAlign: 'center', 
+    color: idx == modelIdx ? 'white' : '#673ab7',
+    backgroundColor: idx == modelIdx ? '#673ab7' : 'white',
+    border: idx == alternativeIdx ? '2px dashed rgb(245, 176, 66)' : '1px solid #673ab7'
+  }
+  return styling
+}
+
 @observer
 class DataSourceView extends React.PureComponent {
 
   constructor(props) {
     super(props)
     this.state = {
-      view: 'list',
+      view: 'loaded',
     }
   }
 
@@ -49,22 +59,21 @@ class DataSourceView extends React.PureComponent {
     return (
       
       <Grid style={{paddingLeft: '12px', width: 'calc(100% + 8px)'}} justify="space-between" container spacing={2}>
-
+        <Grid item style={{paddingBottom: '1px'}} xs={12}>
+          <span style={{color: '#3b444b'}}>Energy Profiles</span>
+        </Grid>
         <Grid xs={8} item style={{padding: '0px'}}>
 
-        {this.state.view == 'list' && <StyledToggleButtonGroup
+        {this.state.view != 'link' && <StyledToggleButtonGroup
           size="small"
           value={TrackerStore.modelIdx}
           exclusive
           onChange={(event, newPaper) => { TrackerStore.setModelSource(newPaper) }}
           aria-label="text alignment"
         >
-        {this.state.view == 'list' && MODEL_DATA.map((value, idx) => (
+        {this.state.view != 'link' && MODEL_DATA.map((value, idx) => (
 
-          <ToggleButton style={{
-              textTransform: 'none', display: 'block', textAlign: 'left', 
-              border: idx == TrackerStore.alternativeModelIdx ? '2px dashed rgb(245, 176, 66)' : '1px solid rgba(0, 0, 0, 0.12)'
-            }}
+          <ToggleButton style={getButtonStyling(idx, TrackerStore.alternativeModelIdx, TrackerStore.modelIdx)}
               onContextMenu={(e) => {
                 if (e.type === 'contextmenu') {
                   e.preventDefault();
@@ -82,13 +91,13 @@ class DataSourceView extends React.PureComponent {
         ))}
         </StyledToggleButtonGroup> }
 
-        { this.state.view != 'list' &&
+        { this.state.view == 'link' &&
           <Grid container>
             <Grid item style={{marginRight: '8px', marginTop: '8px', marginLeft: '8px'}} xs={7}>
               <TextField
                 style={{width: '100%'}}
                 id="outlined-helperText"
-                label="Enter the training URL here!"
+                label="Enter Live Energy Profile URL"
                 variant="outlined"
               />
             </Grid>
@@ -99,13 +108,13 @@ class DataSourceView extends React.PureComponent {
                 style={{height: 'calc(100% - 8px)', marginTop: '8px'}}
                 startIcon={<GetAppIcon />}
               >
-                Export Energy Profile
+                Export
               </Button>
             </Grid>
           </Grid>
         }
 
-        { this.state.view == 'list' && 
+        { this.state.view != 'link' && 
           <div style={{display: 'inline'}}>
             <input
               accept=".json"
@@ -120,7 +129,7 @@ class DataSourceView extends React.PureComponent {
               variant="outlined"
               color="primary"
               component="span">
-                Import Energy Profile
+                Import
               </Button>
             </label> 
           </div>
@@ -131,10 +140,7 @@ class DataSourceView extends React.PureComponent {
 
         <Grid item>
           <ToggleButtonGroup style={{backgroundColor: 'white'}} value={this.state.view} exclusive onChange={this.handleChange.bind(this)}>
-            <ToggleButton value="list" aria-label="list">
-              <FindInPageIcon />
-            </ToggleButton>
-            <ToggleButton value="module" aria-label="module">
+            <ToggleButton value="link" aria-label="module">
               <LinkIcon />
             </ToggleButton>
           </ToggleButtonGroup>

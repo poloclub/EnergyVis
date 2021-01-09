@@ -362,9 +362,9 @@ class USMap extends React.PureComponent {
   render() {
     return (<div>
       <Grid container>
-        <Grid item sm={6}>
+        <Grid item sm={12}>
           <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-            Your Region's Carbon to Energy Production
+            Your Region's Energy Intensity <span style={{fontSize: '.9rem', fontWeight: '400'}}>(Lower is Better)</span>
           </Typography>
         </Grid>
         {/* <Grid item sm={6}>
@@ -379,17 +379,28 @@ class USMap extends React.PureComponent {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {TrackerStore.hoveredState ? (TrackerStore.hoveredState + " - " + NRELData[TrackerStore.hoveredState]["co2_lb_kwh"].toFixed(2)) : "Alternative"} CO<sub>2</sub> lb / kWh 
+        {TrackerStore.initialState && 
+          (<span style={{fontSize: '17px'}}>
+            <span style={{fontWeight: 'bold'}}>{TrackerStore.initialState} </span> 
+            <span>{NRELData[TrackerStore.initialState]["co2_lb_kwh"].toFixed(2)}</span>
+            <span style={{color: 'rgba(0, 0, 0, .54)'}}> CO<sub>2</sub> lb / kWh</span>
+          </span>)} 
+
         </div>
         </Grid>
       </Grid>
       <Grid container>
         <Grid item sm={6}>
-          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / kWh - lower is better</FormLabel>
+          <FormLabel style={{paddingTop: '1%', paddingLeft: '16px'}} component="legend">CO<sub>2</sub> lb / kWh</FormLabel>
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {TrackerStore.initialState && (TrackerStore.initialState + " - " + NRELData[TrackerStore.initialState]["co2_lb_kwh"].toFixed(2))} CO<sub>2</sub> lb / kWh
+          {TrackerStore.hoveredState && 
+            (<span style={{fontSize: '17px'}}>
+              <span style={{fontWeight: 'bold', color: 'rgb(245, 176, 66)'}}>{TrackerStore.hoveredState} </span> 
+              <span>{NRELData[TrackerStore.hoveredState]["co2_lb_kwh"].toFixed(2)}</span>
+              <span style={{color: 'rgba(0, 0, 0, .54)'}}> CO<sub>2</sub> lb / kWh</span>
+            </span>) }
         </div>
         </Grid>
       </Grid>

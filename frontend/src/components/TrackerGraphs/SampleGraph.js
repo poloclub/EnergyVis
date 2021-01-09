@@ -321,12 +321,12 @@ class SampleGraph extends React.PureComponent {
             )}
           </Popper>
           <Grid container>
-            <Grid item sm={6}>
+            <Grid item sm={11}>
               <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
                 Your Model’s {this.state.graphType == 0 ? <span>CO<sub>2</sub> Emissions (CO2 lbs)</span> : <span>Enery Consumption (kWh)</span>}
               </Typography>
             </Grid>
-            <Grid item sm={6}>
+            <Grid item sm={1}>
             <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
               {/* <HelpOutlineIcon /> */}
               <SettingsIcon onClick={this.handleClick('bottom-end')} />
