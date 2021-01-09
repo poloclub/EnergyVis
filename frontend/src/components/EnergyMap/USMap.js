@@ -78,8 +78,8 @@ class USMap extends React.PureComponent {
         .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
 
-      _this.initialStateSVG.style("stroke-width", "4")
-        .style("stroke", "#f5b042").raise()
+      _this.initialStateSVG.style("stroke-width", "3")
+        .style("stroke", "#606060").raise()
 
     }
 
@@ -93,8 +93,8 @@ class USMap extends React.PureComponent {
       // _this.props.selectedStateHandler(NRELData[d['properties']['name']]["co2_lb_kwh"])
       // _this.setState({selectedState: d['properties']['name']})
       TrackerStore.setHoveredState(d['properties']['name'])
-      _this.initialStateSVG.style("stroke-width", "4")
-        .style("stroke", "#f5b042").raise()
+      _this.initialStateSVG.style("stroke-width", "3")
+        .style("stroke", "#606060").raise()
     }
 
     function handleMouseOut(d, i) {
@@ -116,8 +116,8 @@ class USMap extends React.PureComponent {
 
       TrackerStore.setHoveredState(_this.state.clicked)
       d3.select(this).style("cursor", "default"); 
-      _this.initialStateSVG.style("stroke-width", "4")
-        .style("stroke", "#f5b042").raise()
+      _this.initialStateSVG.style("stroke-width", "3")
+        .style("stroke", "#606060").raise()
 
     }
 
@@ -172,9 +172,9 @@ class USMap extends React.PureComponent {
         .filter((d, local) => {
           return d["properties"]["name"] == TrackerStore.initialState
         }).style("stroke-width", (d) => {
-          return "4"
+          return "3"
         })
-        .style("stroke", "#f5b042").raise()
+        .style("stroke", "#606060").raise()
 
       if (_this.state.clicked) {
         _this.svg.selectAll('path')
@@ -269,8 +269,8 @@ class USMap extends React.PureComponent {
           return d["properties"]["name"] == newState
         })
 
-        this.initialStateSVG.style("stroke-width", "4")
-          .style("stroke", "#f5b042").raise()
+        this.initialStateSVG.style("stroke-width", "3")
+          .style("stroke", "#606060").raise()
 
         this.setState({clicked: null})
       }
@@ -315,8 +315,8 @@ class USMap extends React.PureComponent {
         }
         if (this.initialStateSVG) {
           this.initialStateSVG
-            .style("stroke-width", "4")
-            .style("stroke", "#f5b042").raise()
+            .style("stroke-width", "3")
+            .style("stroke", "#606060").raise()
         }
 
         TrackerStore.setHoveredState(null)
@@ -342,8 +342,8 @@ class USMap extends React.PureComponent {
         }
         if (this.initialStateSVG) {
           this.initialStateSVG
-            .style("stroke-width", "4")
-            .style("stroke", "#f5b042").raise()
+            .style("stroke-width", "3")
+            .style("stroke", "#606060").raise()
         }
         TrackerStore.setHoveredState(null)
         this.setState({

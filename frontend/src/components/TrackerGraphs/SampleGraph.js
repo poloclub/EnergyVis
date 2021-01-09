@@ -181,7 +181,8 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
           id: 'y-axis-1',
           scaleLabel: {
             display: true,
-            labelString: graphType == 0 ? 'Carbon Emissions (CO2 lbs)' : 'Kilowatt Hours (kWH)'
+            labelString: graphType == 0 ? 'Carbon Emissions (CO2 lbs)' : 'Kilowatt Hours (kWH)',
+            fontSize: 16
           }        
         },
       ],
@@ -191,7 +192,8 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
           id: 'x-axis-1',
           scaleLabel: {
             display: false,
-            labelString: intervalType == 0 ? 'Interval (seconds)' : 'Epoch'
+            labelString: intervalType == 0 ? 'Interval (seconds)' : 'Epoch',
+            fontSize: 16
           },
         },
       ]
@@ -201,7 +203,8 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
         filter: function(item, chart) {
           // Logic to remove a particular legend item goes here
           return !item.text.includes('Extrapolated');
-        }
+        },
+        fontSize: 16
       }
     }
   }
@@ -323,7 +326,7 @@ class SampleGraph extends React.PureComponent {
           <Grid container>
             <Grid item sm={11}>
               <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-                Your Model’s {this.state.graphType == 0 ? <span>CO<sub>2</sub> Emissions (CO2 lbs)</span> : <span>Enery Consumption (kWh)</span>}
+                Your Model’s {this.state.graphType == 0 ? <span>CO<sub>2</sub> Emissions (CO<sub>2</sub> lbs)</span> : <span>Enery Consumption (kWh)</span>}
               </Typography>
             </Grid>
             <Grid item sm={1}>
@@ -339,7 +342,7 @@ class SampleGraph extends React.PureComponent {
           <div style={{marginTop: '2.5%', marginLeft: '2.5%', marginRight: '2.5%'}}>
             <Line data={dataScaffold["data"]} options={dataScaffold["options"]}/>
             <div style={{textAlign: 'center'}}>
-              <p style={{margin: 0, fontSize: '12px'}}>Epochs ({this.state.sliderVal} 
+              <p style={{margin: 0, fontSize: '16px'}}>Epochs ({this.state.sliderVal} 
               <div style={upDownStyles}>
               <IconButton 
               onClick={() => {this.setState({sliderVal: this.state.sliderVal + 10})}}
