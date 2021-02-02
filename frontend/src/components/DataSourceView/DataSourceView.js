@@ -30,13 +30,27 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
   }
 }))(ToggleButtonGroup);
 
+// const StyledToggleButton = withStyles((theme) => ({
+//   root: {
+//     '&$selected': {
+//       background: 'rgba(0, 0, 0, 0.12)',
+//       color: 'white',
+//       boxShadow: 'none',
+//     },
+//   }
+// }))(ToggleButton);
+
 
 const getButtonStyling = (idx, alternativeIdx, modelIdx) => {
   const styling = {
     textTransform: 'none', display: 'block', textAlign: 'center', 
-    color: idx == modelIdx ? 'white' : '#673ab7',
-    backgroundColor: idx == modelIdx ? '#673ab7' : 'white',
-    border: idx == alternativeIdx ? '2px dashed rgb(245, 176, 66)' : '1px solid #673ab7'
+    // color: idx == modelIdx ? 'white' : '#673ab7',
+    color: '#673ab7',
+    backgroundColor: idx == modelIdx ? '#eadeff' : 'white',
+    border: idx == alternativeIdx ? '2px dashed rgb(245, 176, 66)' : '1px solid #673ab7',
+    '&:hover': {
+      color: 'green'
+    }
   }
   return styling
 }
