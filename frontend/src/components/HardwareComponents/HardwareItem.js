@@ -27,30 +27,32 @@ class HardwareItem extends React.Component {
                 <ListItemText
                     primary={this.props.hardwareType + " - " + this.props.hardwareName}
                     secondary={<React.Fragment>
-                        <Typography
-                          component="span"
-                          variant="caption"
-                          color="textPrimary"
-                        >
-                          {"Quantity: " + this.props.original }
-                        </Typography>
-                        <br />
+                        {this.props.original &&
+                            <Typography
+                                component="span"
+                                variant="caption"
+                                color="textPrimary"
+                            >
+                            {"Quantity: " + this.props.original }
+                            </Typography>
+                        }
+                        {this.props.original && <br />}
                         { Number.isFinite(this.props.quantity) && this.props.quantity != this.props.original && <Typography
                           component="span"
                           variant="caption"
                           style={{color: '#f5b042', fontWeight: 'bold'}}
                         >
                           {"Alternative: " + this.props.quantity}
-                        </Typography> } 
+                        </Typography> }
                       </React.Fragment>}
                 />
                 <ListItemSecondaryAction>
                 <IconButton onClick={() => { this.props.updateQuantityHandler(this.props.quantity + 1) }} edge="end" aria-label="add">
                     <AddIcon />
                 </IconButton>
-                <IconButton 
-                    onClick={() => { 
-                        this.props.updateQuantityHandler(this.props.quantity > 0 ? this.props.quantity - 1 : this.props.quantity) 
+                <IconButton
+                    onClick={() => {
+                        this.props.updateQuantityHandler(this.props.quantity > 0 ? this.props.quantity - 1 : this.props.quantity)
                     }} edge="end" aria-label="remove">
                     <RemoveIcon />
                 </IconButton>

@@ -43,7 +43,7 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
 
 const getButtonStyling = (idx, alternativeIdx, modelIdx) => {
   const styling = {
-    textTransform: 'none', display: 'block', textAlign: 'center', 
+    textTransform: 'none', display: 'block', textAlign: 'center',
     // color: idx == modelIdx ? 'white' : '#673ab7',
     color: '#673ab7',
     backgroundColor: idx == modelIdx ? '#eadeff' : 'white',
@@ -71,7 +71,7 @@ class DataSourceView extends React.PureComponent {
 
   render() {
     return (
-      
+
       <Grid style={{paddingLeft: '12px', width: 'calc(100% + 8px)'}} justify="space-between" container spacing={2}>
         <Grid item style={{paddingBottom: '1px'}} xs={12}>
           <span style={{color: '#3b444b'}}>Energy Profiles</span>
@@ -128,24 +128,31 @@ class DataSourceView extends React.PureComponent {
           </Grid>
         }
 
-        { this.state.view != 'link' && 
+        { this.state.view != 'link' &&
           <div style={{display: 'inline'}}>
             <input
               accept=".json"
               style={{ display: 'none' }}
               id="raised-button-file"
               type="file"
+              onChange={(e) => {
+                const fileReader = new FileReader();
+                fileReader.readAsText(e.target.files[0], "UTF-8");
+                fileReader.onload = e => {
+                  var loadedProfile = JSON.parse(e.target.result);
+                };
+              }}
             />
             <label htmlFor="raised-button-file">
-              <Button variant="raised" 
-              style={{height: "calc(100% - 16px)", marginBottom: '8px'}} 
-              startIcon={<PublishIcon />} 
+              <Button variant="raised"
+              style={{height: "calc(100% - 16px)", marginBottom: '8px'}}
+              startIcon={<PublishIcon />}
               variant="outlined"
               color="primary"
               component="span">
                 Import
               </Button>
-            </label> 
+            </label>
           </div>
         }
 
@@ -160,7 +167,7 @@ class DataSourceView extends React.PureComponent {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-    ); 
+    );
   }
 
 }

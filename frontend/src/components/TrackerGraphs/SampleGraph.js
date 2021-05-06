@@ -3,13 +3,13 @@
 
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import { SERVER_URI, MODEL_DATA } from '../../consts/consts' 
-import NRELData from '../../NRELData.json' 
+import { SERVER_URI, MODEL_DATA } from '../../consts/consts'
+import { jointMap } from "../../utils/jointMap"
+import efficiencyMap from '../HardwareComponents/efficiency.json'
+
+import NRELData from '../../NRELData.json'
 
 import { linearRegression } from '../../utils/regression'
-import Slider from '@material-ui/core/Slider';
-import Pagination from '@material-ui/lab/Pagination';
-import PaginationItem from '@material-ui/lab/PaginationItem';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 
@@ -20,7 +20,6 @@ import IconButton from '@material-ui/core/IconButton';
 
 import OfflineBoltOutlinedIcon from '@material-ui/icons/OfflineBoltOutlined';
 import PublicOutlinedIcon from '@material-ui/icons/PublicOutlined';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import Fade from '@material-ui/core/Fade';
 import Popper from '@material-ui/core/Popper';
 import SettingsIcon from '@material-ui/icons/Settings';
@@ -55,12 +54,14 @@ const labelGenerator = (length, interval) => {
 
 const co2Converter = (PUE, co2Factor, graphType) => graphType == 0 ? (kwh) => kwh * PUE * co2Factor : x => x;
 const cumulativeMap = (start, cumulative) => cumulative ? (sum => value => sum += value)(start) : x => x
+const harmonicMean = (ns) => ns.length / ns.reduce((invSum, n) => (invSum + (1 / n)), 0)
 
-const sumDatasetEnergy = (serverData, graphKey, cumulative) => {
+
+const sumDatasetEnergy = (serverData, graphKey, cumulative, gpuRescale) => {
   let mappedCpu = serverData["cpu"][graphKey]
     .map(cumulativeMap(0, cumulative))
 
-  let mappedGpu = serverData["gpu"][graphKey]
+  let mappedGpu = serverData["gpu"][graphKey].map((curr) => curr * gpuRescale)
     .map(cumulativeMap(0, cumulative))
 
   return mappedGpu.map(function (num, idx) {
@@ -77,7 +78,7 @@ const extrapolator = (data, extrapolation) => {
   for (var i = 0; i < data.length - 1; i++) {
     extrapolated_data.push(null)
   }
-  
+
   for (var i = data.length - 1; i < data.length + extrapolation; i++) {
     extrapolated_data.push(regression["slope"] * i + regression["intercept"])
   }
@@ -85,8 +86,8 @@ const extrapolator = (data, extrapolation) => {
   return extrapolated_data
 }
 
-const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType, 
-                        PUE, hoveredState, cumulative, extrapolation) => {
+const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
+                        PUE, hoveredState, cumulative, extrapolation, gpuRescale) => {
 
   const emptyGraph =  {"data": {}, "options": {}}
   if (!Number.isFinite(modelIdx)) return emptyGraph;
@@ -94,20 +95,22 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
   if (!serverData) return emptyGraph;
   if (!extrapolation) extrapolation = 0;
 
-  const originalCo2Converter = 
-    co2Converter(PUE || TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"], graphType)
+  const originalCo2Converter =
+    co2Converter(TrackerStore.startPUE, NRELData[TrackerStore.initialState]["co2_lb_kwh"], graphType)
 
-  const plotAlternatives = hoveredState || Number.isFinite(alternativeIdx);
+  const plotAlternatives = hoveredState || Number.isFinite(alternativeIdx) || TrackerStore.counterfactualMode;
 
-  const alternativeConverter = 
-    plotAlternatives && co2Converter(PUE || TrackerStore.startPUE, NRELData[TrackerStore.hoveredState]["co2_lb_kwh"], graphType)
-  
+  const alternativeConverter =
+    plotAlternatives && co2Converter(PUE || TrackerStore.startPUE, NRELData[TrackerStore.hoveredState || TrackerStore.initialState]["co2_lb_kwh"], graphType)
+
   const graphKey = intervalType == 0 ? "interval" : "epoch"
   let labels = labelGenerator(serverData["cpu"][graphKey].length + extrapolation, graphKey == "epoch" ? 1 : 10);
 
-  let originalSummedEnergy = sumDatasetEnergy(serverData, graphKey, cumulative);
-  let alternativeSummedEnergy = Number.isFinite(alternativeIdx) ? 
-    sumDatasetEnergy(MODEL_DATA[alternativeIdx].serverData, graphKey, cumulative) : originalSummedEnergy;
+  let originalSummedEnergy = sumDatasetEnergy(serverData, graphKey, cumulative, 1);
+
+  let alternativeSummedEnergy = Number.isFinite(alternativeIdx) ?
+    sumDatasetEnergy(MODEL_DATA[alternativeIdx].serverData, graphKey, cumulative, gpuRescale) : sumDatasetEnergy(serverData, graphKey, cumulative, gpuRescale);
+
 
   let datasets = [
     {
@@ -149,7 +152,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
       }
     )
 
-    
+
     if (plotAlternatives) {
       datasets.push(
         {
@@ -170,7 +173,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
     labels,
     datasets
   }
-  
+
   const options = {
     scales: {
       yAxes: [
@@ -183,10 +186,10 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
             display: true,
             labelString: graphType == 0 ? 'Carbon Emissions (CO2 lbs)' : 'Kilowatt Hours (kWH)',
             fontSize: 16
-          }        
+          }
         },
       ],
-      xAxes: [ 
+      xAxes: [
         {
           display: true,
           id: 'x-axis-1',
@@ -230,7 +233,7 @@ class SampleGraph extends React.PureComponent {
     };
     this.updateInterval = null;
   }
-  
+
   fetchGraphData = () => {
     fetch(SERVER_URI + "energy-stats").then((response) => response.json())
       .then((data) => {
@@ -268,11 +271,31 @@ class SampleGraph extends React.PureComponent {
   };
 
   render() {
+
+    let gpuMap = {}
+
+    if (TrackerStore.initialComponents) {
+      gpuMap = jointMap(TrackerStore.startComponents["gpu"], TrackerStore.initialComponents["gpu"]);
+    }
+
+    const originals = []
+    const alternatives = []
+    Object.keys(gpuMap).forEach((curr) => {
+      const componentObj = gpuMap[curr]
+      if (Number.isFinite(componentObj.original)) {
+        for (let i = 0; i < componentObj.original; i++) originals.push(efficiencyMap[curr]);
+      }
+      for (let i = 0; i < componentObj.alternative; i++) alternatives.push(efficiencyMap[curr]);
+
+    })
+
+    const gpuRescale = harmonicMean(originals) / harmonicMean(alternatives)
+
     const dataScaffold = getDataScaffold(TrackerStore.modelIdx, TrackerStore.alternativeModelIdx,
-      this.state.graphType, this.state.intervalType, TrackerStore.initialPUE, 
-      TrackerStore.hoveredState, 
-      this.state.cumulative, this.state.sliderVal)
-    
+      this.state.graphType, this.state.intervalType, TrackerStore.initialPUE,
+      TrackerStore.hoveredState,
+      this.state.cumulative, this.state.sliderVal, gpuRescale)
+
     return (
       <div>
           <Popper open={this.state.open} anchorEl={this.state.anchorEl} placement={this.state.placement} transition>
@@ -342,9 +365,9 @@ class SampleGraph extends React.PureComponent {
           <div style={{marginTop: '2.5%', marginLeft: '2.5%', marginRight: '2.5%'}}>
             <Line data={dataScaffold["data"]} options={dataScaffold["options"]}/>
             <div style={{textAlign: 'center'}}>
-              <p style={{margin: 0, fontSize: '16px'}}>Epochs ({this.state.sliderVal} 
+              <p style={{margin: 0, fontSize: '16px'}}>Epochs ({this.state.sliderVal}
               <div style={upDownStyles}>
-              <IconButton 
+              <IconButton
               onClick={() => {this.setState({sliderVal: this.state.sliderVal + 10})}}
               style={{padding: '0', width: '12px', height: '12px'}}>
                 <ArrowDropUpIcon  />
@@ -353,43 +376,14 @@ class SampleGraph extends React.PureComponent {
               <IconButton onClick={() => {
                   if (this.state.sliderVal >= 10)
                     this.setState({sliderVal: this.state.sliderVal - 10})
-                }} 
+                }}
                 style={{padding: '0', width: '12px', height: '12px'}} >
                 <ArrowDropDownIcon />
               </IconButton>
               </div> extrapolated)</p>
             </div>
-            
+
           </div>
-
-
-          {/* <Grid style={{paddingLeft: "3%", paddingRight: "3%"}} container spacing={2}>
-            <Grid item sm={12}>
-              <FormLabel component="legend">Extrapolated Points</FormLabel>
-
-              <div style={{paddingLeft: '2%', paddingRight: '2%'}}>
-              <Slider
-                min={0}
-                max={this.state.sliderMax}
-                value={this.state.sliderVal}
-                onChange={(e, val) => { this.setState({sliderVal: val}) }}
-                onChangeCommitted={(e, val) => { this.setState({sliderMax: val * 2 + 20}) }}
-                valueLabelDisplay="auto"
-              />
-              </div>
-
-             
-               <div style={{paddingTop: "5px", display: "flex", justifyContent: "center"}}>
-                <Pagination renderItem={(item) => { 
-                  item.page--;
-                  return <PaginationItem {...item} />
-                }} page={this.state.sliderVal + 1} count={this.state.sliderMax} 
-                onChange={(e, val) => { this.setState({sliderVal: val - 1, sliderMax: val * 2 + 20}) }}
-                size="large" showFirstButton showLastButton />
-               </div>
-
-            </Grid>
-          </Grid> */}
       </div>
     );
   }

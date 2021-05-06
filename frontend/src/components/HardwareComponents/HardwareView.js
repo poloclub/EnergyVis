@@ -24,7 +24,7 @@ const jointMap = (original, alternative) => {
   const alternativeKeys = new Set(Object.keys(alternative))
   const allKeys = union(originalKeys, alternativeKeys)
   for (var k of allKeys) {
-    joint[k] = {original: original[k], alternative: alternative[k]} 
+    joint[k] = {original: original[k], alternative: alternative[k]}
   }
   return joint
 }
@@ -35,20 +35,18 @@ class HardwareView extends React.PureComponent {
   render () {
     let cpuMap = {}
     let gpuMap = {}
-    
+
     if (TrackerStore.initialComponents) {
       cpuMap = jointMap(TrackerStore.startComponents["cpu"], TrackerStore.initialComponents["cpu"]);
       gpuMap = jointMap(TrackerStore.startComponents["gpu"], TrackerStore.initialComponents["gpu"]);
     }
-
-    console.log("RENDERING")
 
     return (<div>
       {/* <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
         Your PUE Coefficient
       </Typography>
       <Divider variant="middle" />
-  
+
       <div style={{padding: '2.5%'}}>
         <TextField
           id="outlined-number"
@@ -60,25 +58,25 @@ class HardwareView extends React.PureComponent {
           }}
           variant="outlined"
           value={TrackerStore.initialPUE}
-          onChange={(event) => { 
+          onChange={(event) => {
             if (event.target.value >= 0) TrackerStore.setPUE(event.target.value)
           }}
         />
       </div> */}
-  
+
       <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
           Your Hardware
       </Typography>
-  
+
       <Divider variant="middle" />
       <List dense={true}>
-        {TrackerStore.initialComponents && 
-          Object.keys(cpuMap).map((component, i) => 
-          <HardwareItem 
-          hardwareType={"CPU"} 
+        {TrackerStore.initialComponents &&
+          Object.keys(cpuMap).map((component, i) =>
+          <HardwareItem
+          hardwareType={"CPU"}
           key={i}
-          hardwareName={component} 
-          quantity={cpuMap[component].alternative} 
+          hardwareName={component}
+          quantity={cpuMap[component].alternative}
           original={cpuMap[component].original}
           updateQuantityHandler={(val) => {
             // props.updateQuantityHandler("cpu", component, val)
@@ -86,14 +84,14 @@ class HardwareView extends React.PureComponent {
           }}
           />
         )}
-  
-        {TrackerStore.initialComponents && 
-          Object.keys(gpuMap).map((component, i) => 
-          <HardwareItem 
-          hardwareType={"GPU"} 
+
+        {TrackerStore.initialComponents &&
+          Object.keys(gpuMap).map((component, i) =>
+          <HardwareItem
+          hardwareType={"GPU"}
           key={i}
-          hardwareName={component} 
-          quantity={gpuMap[component].alternative} 
+          hardwareName={component}
+          quantity={gpuMap[component].alternative}
           original={gpuMap[component].original}
           updateQuantityHandler={(val) => {
             // props.updateQuantityHandler("gpu", component, val)

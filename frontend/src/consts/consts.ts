@@ -9,7 +9,7 @@ export const MODEL_DATA = [
         "Intel i7 2600K": 1
       },
       "gpu": {
-        "NVIDIA GTX 2080 Ti": 4
+        "geforce-gtx-1080-ti": 4
       }
     },
     serverData: {
@@ -20,7 +20,8 @@ export const MODEL_DATA = [
         "epoch": [.05, .05, .05, .05, .05, .05]
       } 
     },
-    location: "Georgia"
+    location: "Georgia",
+    PUE: 1.59
   },
   {
     name: 'BERT',
@@ -30,7 +31,7 @@ export const MODEL_DATA = [
         "Intel i7 2600K": 2
       },
       "gpu": {
-        "NVIDIA GTX 2080 Ti": 8
+        "geforce-rtx-2080-ti": 8
       }
     },
     serverData: {
@@ -41,6 +42,7 @@ export const MODEL_DATA = [
         "epoch": [.1, .1, .1, .1, .1, .1]
       } 
     },
-    location: "Wyoming"
+    location: "Wyoming",
+    PUE: 1.59
   }
 ]

@@ -41,13 +41,13 @@ export class TrackerStore {
     //     runInAction(() => {
     //       this.startComponents = copyObject(data["component_names"])
     //       this.initialComponents = copyObject(data["component_names"])
-  
+
     //       this.startState = copyObject(data["state"])
     //       this.initialState = copyObject(data["state"])
-          
+
     //       this.counterfactualMode = copyObject(data["paused"])
     //     })
-    // })    
+    // })
   }
 
   @action resetTracker () {
@@ -70,12 +70,15 @@ export class TrackerStore {
     }
 
     this.modelIdx = newIdx
-    this.initialComponents = Number.isFinite(this.modelIdx) ? 
+    this.initialComponents = Number.isFinite(this.modelIdx) ?
       MODEL_DATA[this.modelIdx]["components"] : copyObject(this.startComponents)
     this.startComponents = copyObject(this.initialComponents)
     this.alternativeModelIdx = null
     this.hoveredState = null
-    if (Number.isFinite(this.modelIdx)) this.initialState = MODEL_DATA[newIdx].location
+    if (Number.isFinite(this.modelIdx)) {
+      this.initialState = MODEL_DATA[newIdx].location
+      this.initialPUE = this.startPUE = MODEL_DATA[newIdx].PUE
+    }
   }
 
   @action setAlternativeModel (newIdx) {
@@ -87,14 +90,14 @@ export class TrackerStore {
     if (this.alternativeModelIdx == newIdx) {
       this.resetTracker();
       return
-    } 
-    
+    }
+
     this.alternativeModelIdx = newIdx
     this.hoveredState = MODEL_DATA[newIdx].location
-    this.initialComponents = Number.isFinite(this.alternativeModelIdx) ? 
+    this.initialComponents = Number.isFinite(this.alternativeModelIdx) ?
       MODEL_DATA[this.alternativeModelIdx]["components"] : copyObject(this.startComponents)
 
-  } 
+  }
 
   // alternative mode actions
 
@@ -120,13 +123,19 @@ export class TrackerStore {
 
   @action setPUE (newPUE) {
     this.initialPUE = newPUE
+    if (!this.counterfactualMode) this.promptAlternativeMode()
   }
 
   @action updateHardware (type, component, val) {
-    console.log("UPDATING HEREEE!! ")
-    console.log(type, component, val)
     // props.updateQuantityHandler("gpu", component, val)
     this.initialComponents[type][component] = val
+    if (!this.counterfactualMode) this.promptAlternativeMode()
+    // recompute efficiency scalar
+  }
+
+  @action addHardware (type, component) {
+    this.initialComponents[type][component] = 1
+    if (!this.counterfactualMode) this.promptAlternativeMode()
   }
 
 }

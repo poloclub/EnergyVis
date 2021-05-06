@@ -6,8 +6,11 @@ import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
+import efficiencyMap from './efficiency.json'
+import TrackerStore from '../../stores/TrackerStore'
 
 export default function HardwareAutoComplete() {
+  const [value, setValue] = React.useState("");
   return (
     <Grid container>
 
@@ -17,6 +20,7 @@ export default function HardwareAutoComplete() {
             id="highlights-demo"
             options={top100Films}
             style={{paddingLeft: '16px', paddingRight: '16px', paddingTop: '0px'}}
+            onChange={(event, value) => setValue(value)} // prints the selected value
             getOptionLabel={(option) => option.title}
             renderInput={(params) => (
               <TextField {...params} label="Hardware" variant="outlined" margin="normal" />
@@ -38,8 +42,10 @@ export default function HardwareAutoComplete() {
           />
         </Grid>
         <Grid item xs={3}>
-          
-          <Button color="primary" style={{marginTop: "16px",width: "90%", height: "68.5%"}} variant="contained">Add</Button>
+
+          <Button onClick={() => {
+            TrackerStore.addHardware("gpu", value.title)
+          }} color="primary" style={{marginTop: "16px",width: "90%", height: "68.5%"}} variant="contained">Add</Button>
 
         </Grid>
     </Grid>
@@ -53,19 +59,8 @@ export default function HardwareAutoComplete() {
 
 // Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top
 
-const curr_gpus = ["Titan RTX",
-"RTX 2080 Ti",
-"RTX 2080 Super",
-"RTX 2080",
-"RTX 2070 Super",
-"RTX 2070",
-"RTX 2060 Super",
-"RTX 2060",
-"GTX 1660 Ti",
-"GTX 1660",
-"GTX 1650"]
 
-const top100Films  = curr_gpus.map((curr) => {
-  return {title: curr, year: 2020}
+const top100Films  = Object.keys(efficiencyMap).map((curr) => {
+  return {title: curr}
 })
 
