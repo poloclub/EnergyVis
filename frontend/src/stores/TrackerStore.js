@@ -18,6 +18,7 @@ export class TrackerStore {
   // @observable clickedState = "Georgia"
   @observable modelIdx = 0;
   @observable alternativeModelIdx = null;
+  @observable modelData = MODEL_DATA
 
   startComponents = {
     "gpu" : {},
@@ -71,13 +72,13 @@ export class TrackerStore {
 
     this.modelIdx = newIdx
     this.initialComponents = Number.isFinite(this.modelIdx) ?
-      MODEL_DATA[this.modelIdx]["components"] : copyObject(this.startComponents)
+      this.modelData[this.modelIdx]["components"] : copyObject(this.startComponents)
     this.startComponents = copyObject(this.initialComponents)
     this.alternativeModelIdx = null
     this.hoveredState = null
     if (Number.isFinite(this.modelIdx)) {
-      this.initialState = MODEL_DATA[newIdx].location
-      this.initialPUE = this.startPUE = MODEL_DATA[newIdx].PUE
+      this.initialState = this.modelData[newIdx].location
+      this.initialPUE = this.startPUE = this.modelData[newIdx].PUE
     }
   }
 
@@ -93,9 +94,9 @@ export class TrackerStore {
     }
 
     this.alternativeModelIdx = newIdx
-    this.hoveredState = MODEL_DATA[newIdx].location
+    this.hoveredState = this.modelData[newIdx].location
     this.initialComponents = Number.isFinite(this.alternativeModelIdx) ?
-      MODEL_DATA[this.alternativeModelIdx]["components"] : copyObject(this.startComponents)
+      this.modelData[this.alternativeModelIdx]["components"] : copyObject(this.startComponents)
 
   }
 
@@ -115,7 +116,7 @@ export class TrackerStore {
   @action setHoveredState (newState) {
     this.hoveredState = newState
     if (newState == null && this.alternativeModelIdx) {
-      this.hoveredState = MODEL_DATA[this.alternativeModelIdx].location
+      this.hoveredState = this.modelData[this.alternativeModelIdx].location
     }
   }
 
@@ -136,6 +137,10 @@ export class TrackerStore {
   @action addHardware (type, component) {
     this.initialComponents[type][component] = 1
     if (!this.counterfactualMode) this.promptAlternativeMode()
+  }
+
+  @action addModelProfile (newProfile) {
+    this.modelData.push(newProfile)
   }
 
 }

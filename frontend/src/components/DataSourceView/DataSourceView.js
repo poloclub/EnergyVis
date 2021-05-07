@@ -85,7 +85,7 @@ class DataSourceView extends React.PureComponent {
           onChange={(event, newPaper) => { TrackerStore.setModelSource(newPaper) }}
           aria-label="text alignment"
         >
-        {this.state.view != 'link' && MODEL_DATA.map((value, idx) => (
+        {this.state.view != 'link' && TrackerStore.modelData.map((value, idx) => (
 
           <ToggleButton style={getButtonStyling(idx, TrackerStore.alternativeModelIdx, TrackerStore.modelIdx)}
               onContextMenu={(e) => {
@@ -140,6 +140,7 @@ class DataSourceView extends React.PureComponent {
                 fileReader.readAsText(e.target.files[0], "UTF-8");
                 fileReader.onload = e => {
                   var loadedProfile = JSON.parse(e.target.result);
+                  TrackerStore.addModelProfile(loadedProfile);
                 };
               }}
             />

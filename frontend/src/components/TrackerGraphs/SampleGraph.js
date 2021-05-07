@@ -91,7 +91,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
 
   const emptyGraph =  {"data": {}, "options": {}}
   if (!Number.isFinite(modelIdx)) return emptyGraph;
-  const serverData = MODEL_DATA[modelIdx].serverData;
+  const serverData = TrackerStore.modelData[modelIdx].serverData;
   if (!serverData) return emptyGraph;
   if (!extrapolation) extrapolation = 0;
 
@@ -109,7 +109,7 @@ const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
   let originalSummedEnergy = sumDatasetEnergy(serverData, graphKey, cumulative, 1);
 
   let alternativeSummedEnergy = Number.isFinite(alternativeIdx) ?
-    sumDatasetEnergy(MODEL_DATA[alternativeIdx].serverData, graphKey, cumulative, gpuRescale) : sumDatasetEnergy(serverData, graphKey, cumulative, gpuRescale);
+    sumDatasetEnergy(TrackerStore.modelData[alternativeIdx].serverData, graphKey, cumulative, gpuRescale) : sumDatasetEnergy(serverData, graphKey, cumulative, gpuRescale);
 
 
   let datasets = [

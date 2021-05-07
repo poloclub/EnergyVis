@@ -65,7 +65,7 @@ class USMap extends React.PureComponent {
         .style("stroke", "#fff")
         .style("stroke-dasharray", "none")
         .style("stroke-width", "1")
-      
+
       if (d["properties"]["name"] == _this.state.clicked) {
         _this.setState({clicked: null})
       } else {
@@ -89,7 +89,7 @@ class USMap extends React.PureComponent {
         .style("stroke-width", "4")
         .style("stroke-dasharray", "5")
         .style("stroke", "#f5b042").raise()
-      d3.select(this).style("cursor", "pointer"); 
+      d3.select(this).style("cursor", "pointer");
       // _this.props.selectedStateHandler(NRELData[d['properties']['name']]["co2_lb_kwh"])
       // _this.setState({selectedState: d['properties']['name']})
       TrackerStore.setHoveredState(d['properties']['name'])
@@ -103,7 +103,7 @@ class USMap extends React.PureComponent {
         .style("stroke-width", "1")
         .style("stroke-dasharray", "none")
         .style("stroke", "#fff")
-      
+
       if (_this.state.clicked != null) {
         svg.selectAll("path").filter((d, local) => {
           return d["properties"]["name"] == _this.state.clicked
@@ -111,11 +111,11 @@ class USMap extends React.PureComponent {
           .style("stroke-dasharray", "5")
           .style("stroke", "#f5b042").raise()
 
-        
+
       }
 
       TrackerStore.setHoveredState(_this.state.clicked)
-      d3.select(this).style("cursor", "default"); 
+      d3.select(this).style("cursor", "default");
       _this.initialStateSVG.style("stroke-width", "3")
         .style("stroke", "#606060").raise()
 
@@ -129,14 +129,14 @@ class USMap extends React.PureComponent {
     var minVal = d3.min(dataArray)
     var maxVal = d3.max(dataArray)
     var ramp = d3.scaleLinear().domain([minVal,maxVal]).range([lowColor,highColor])
-    
+
     // Load GeoJSON data and merge with states data
     d3.json("us-states.json", (json) => {
 
       // Loop through each state data value in the .csv file
       for (var dataState in NRELData) {
 
-        // Grab data value 
+        // Grab data value
         var dataValue = NRELData[dataState]["co2_lb_kwh"]
 
         // Find the corresponding state inside the GeoJSON
@@ -208,7 +208,7 @@ class USMap extends React.PureComponent {
         .attr("offset", "0%")
         .attr("stop-color", highColor)
         .attr("stop-opacity", 1);
-        
+
       legend.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", lowColor)
@@ -232,7 +232,7 @@ class USMap extends React.PureComponent {
         .call(yAxis)
 
       key.attr("height", h + 20)
-      
+
     });
 
 
@@ -254,7 +254,7 @@ class USMap extends React.PureComponent {
   componentDidMount() {
     this.drawMap(TrackerStore.initialState)
     window.addEventListener("resize", this.resizeUpdate.bind(this));
-    
+
     reaction(
       () => TrackerStore.initialState,
       (newState) => {
@@ -292,14 +292,14 @@ class USMap extends React.PureComponent {
 
         this.svg.selectAll('path')
           .filter((d, local) => {
-            return d["properties"]["name"] == MODEL_DATA[newIdx].location
+            return d["properties"]["name"] == TrackerStore.modelData[newIdx].location
           })
           .style("stroke-width", "4")
           .style("stroke-dasharray", "5")
           .style("stroke", "#f5b042").raise()
 
-        this.setState({clicked: MODEL_DATA[newIdx].location})
-        
+        this.setState({clicked: TrackerStore.modelData[newIdx].location})
+
       }
     )
 
@@ -322,7 +322,7 @@ class USMap extends React.PureComponent {
         TrackerStore.setHoveredState(null)
         this.setState({
           clicked: null,
-        })         
+        })
       }
     )
 
@@ -349,7 +349,7 @@ class USMap extends React.PureComponent {
         this.setState({
           clicked: null,
           selectedState: null,
-        })     
+        })
       }
     )
   }
@@ -379,12 +379,12 @@ class USMap extends React.PureComponent {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-        {TrackerStore.initialState && 
+        {TrackerStore.initialState &&
           (<span style={{fontSize: '17px'}}>
-            <span style={{fontWeight: 'bold'}}>{TrackerStore.initialState} </span> 
+            <span style={{fontWeight: 'bold'}}>{TrackerStore.initialState} </span>
             <span>{NRELData[TrackerStore.initialState]["co2_lb_kwh"].toFixed(2)}</span>
             <span style={{color: 'rgba(0, 0, 0, .54)'}}> CO<sub>2</sub> lb / kWh</span>
-          </span>)} 
+          </span>)}
 
         </div>
         </Grid>
@@ -395,9 +395,9 @@ class USMap extends React.PureComponent {
         </Grid>
         <Grid item sm={6}>
         <div style={{float: "right", paddingRight: "16px"}}>
-          {TrackerStore.hoveredState && 
+          {TrackerStore.hoveredState &&
             (<span style={{fontSize: '17px'}}>
-              <span style={{fontWeight: 'bold', color: 'rgb(245, 176, 66)'}}>{TrackerStore.hoveredState} </span> 
+              <span style={{fontWeight: 'bold', color: 'rgb(245, 176, 66)'}}>{TrackerStore.hoveredState} </span>
               <span>{NRELData[TrackerStore.hoveredState]["co2_lb_kwh"].toFixed(2)}</span>
               <span style={{color: 'rgba(0, 0, 0, .54)'}}> CO<sub>2</sub> lb / kWh</span>
             </span>) }

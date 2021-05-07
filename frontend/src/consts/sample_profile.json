@@ -1,6 +1,5 @@
 {
-    "name":"Transfomer",
-    "author":"Vaswani et al. 2017",
+    "name":"Sample Profile",
     "components":{
        "cpu":{
           "Intel i7 2600K":1
@@ -31,6 +30,6 @@
           ]
        }
     },
-    "location":"Georgia",
+    "location":"California",
     "PUE":1.59
  }
