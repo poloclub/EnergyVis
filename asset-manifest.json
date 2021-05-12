@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/static/css/main.6d544bc9.chunk.css",
+    "main.js": "/static/js/main.38d8a45c.chunk.js",
+    "main.js.map": "/static/js/main.38d8a45c.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.6488dc87.js",
+    "runtime-main.js.map": "/static/js/runtime-main.6488dc87.js.map",
+    "static/css/2.2f0ec50f.chunk.css": "/static/css/2.2f0ec50f.chunk.css",
+    "static/js/2.41fe4993.chunk.js": "/static/js/2.41fe4993.chunk.js",
+    "static/js/2.41fe4993.chunk.js.map": "/static/js/2.41fe4993.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.b79b367223a54e9450e171a5fabe83a0.js": "/precache-manifest.b79b367223a54e9450e171a5fabe83a0.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.2f0ec50f.chunk.css.map": "/static/css/2.2f0ec50f.chunk.css.map",
+    "static/css/main.6d544bc9.chunk.css.map": "/static/css/main.6d544bc9.chunk.css.map",
+    "static/js/2.41fe4993.chunk.js.LICENSE.txt": "/static/js/2.41fe4993.chunk.js.LICENSE.txt",
+    "static/media/katex.min.css": "/static/media/KaTeX_Typewriter-Regular.641339e2.woff2"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.6488dc87.js",
+    "static/css/2.2f0ec50f.chunk.css",
+    "static/js/2.41fe4993.chunk.js",
+    "static/css/main.6d544bc9.chunk.css",
+    "static/js/main.38d8a45c.chunk.js"
+  ]
+}
