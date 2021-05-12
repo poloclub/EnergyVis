@@ -19,6 +19,16 @@ export class TrackerStore {
   @observable modelIdx = 0;
   @observable alternativeModelIdx = null;
   @observable modelData = MODEL_DATA
+  @observable dataMode = 'loaded';
+
+  @observable liveData = {
+    "cpu":{
+      "epoch":[]
+    },
+    "gpu":{
+      "epoch":[]
+    }
+  }
 
   startComponents = {
     "gpu" : {},
@@ -36,19 +46,6 @@ export class TrackerStore {
   async getInitialState () {
     // this.resetTracker();
     this.setModelSource(0)
-    // fetch(SERVER_URI + "initial-setup").then((response) => response.json())
-    //   .then((data) => {
-    //     // bit hacky, find a better way to deepclone so the states aren't the same...
-    //     runInAction(() => {
-    //       this.startComponents = copyObject(data["component_names"])
-    //       this.initialComponents = copyObject(data["component_names"])
-
-    //       this.startState = copyObject(data["state"])
-    //       this.initialState = copyObject(data["state"])
-
-    //       this.counterfactualMode = copyObject(data["paused"])
-    //     })
-    // })
   }
 
   @action resetTracker () {
@@ -97,7 +94,8 @@ export class TrackerStore {
     this.hoveredState = this.modelData[newIdx].location
     this.initialComponents = Number.isFinite(this.alternativeModelIdx) ?
       this.modelData[this.alternativeModelIdx]["components"] : copyObject(this.startComponents)
-
+      
+    if (!this.counterfactualMode) this.promptAlternativeMode()
   }
 
   // alternative mode actions
@@ -141,6 +139,29 @@ export class TrackerStore {
 
   @action addModelProfile (newProfile) {
     this.modelData.push(newProfile)
+  }
+
+  @action setTrackerMode (mode) {
+    this.dataMode = mode;
+    if (this.dataMode == "link") {
+      fetch(SERVER_URI + "initial-setup").then((response) => response.json())
+        .then((data) => {
+          // bit hacky, find a better way to deepclone so the states aren't the same...
+          runInAction(() => {
+            this.startComponents = copyObject(data["component_names"])
+            this.initialComponents = copyObject(data["component_names"])
+
+            this.startState = copyObject(data["state"])
+            this.initialState = copyObject(data["state"])
+
+            this.counterfactualMode = copyObject(data["paused"])
+          })
+      })
+    }
+  }
+
+  @action updateLiveData (data) {
+    this.liveData = data;
   }
 
 }

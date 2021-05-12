@@ -61,12 +61,11 @@ const sumDatasetEnergy = (serverData, graphKey, cumulative, gpuRescale) => {
   let mappedCpu = serverData["cpu"][graphKey]
     .map(cumulativeMap(0, cumulative))
 
-  let mappedGpu = serverData["gpu"][graphKey].map((curr) => curr * gpuRescale)
+  let mappedGpu = serverData["gpu"][graphKey]
+    .map((curr) => curr * gpuRescale)
     .map(cumulativeMap(0, cumulative))
 
-  return mappedGpu.map(function (num, idx) {
-    return num + mappedCpu[idx];
-  })
+  return mappedGpu.map((num, idx) => num + mappedCpu[idx])
 }
 
 
@@ -87,11 +86,11 @@ const extrapolator = (data, extrapolation) => {
 }
 
 const getDataScaffold = (modelIdx, alternativeIdx, graphType, intervalType,
-                        PUE, hoveredState, cumulative, extrapolation, gpuRescale) => {
+                        PUE, hoveredState, cumulative, extrapolation, gpuRescale, dataMode) => {
 
   const emptyGraph =  {"data": {}, "options": {}}
-  if (!Number.isFinite(modelIdx)) return emptyGraph;
-  const serverData = TrackerStore.modelData[modelIdx].serverData;
+  if (!Number.isFinite(modelIdx) && dataMode != "link") return emptyGraph;
+  const serverData = dataMode == "link" ? TrackerStore.liveData : TrackerStore.modelData[modelIdx].serverData;
   if (!serverData) return emptyGraph;
   if (!extrapolation) extrapolation = 0;
 
@@ -235,11 +234,18 @@ class SampleGraph extends React.PureComponent {
   }
 
   fetchGraphData = () => {
-    fetch(SERVER_URI + "energy-stats").then((response) => response.json())
-      .then((data) => {
-        this.setState({serverData: data})
-        setTimeout(this.fetchGraphData, 5000);
-      })
+
+    if (TrackerStore.dataMode == "link") {
+      fetch(SERVER_URI + "energy-stats").then((response) => response.json())
+        .then((data) => {
+          TrackerStore.updateLiveData(data);
+          setTimeout(this.fetchGraphData, 5000);
+        })
+        .catch(() => {
+          setTimeout(this.fetchGraphData, 5000);
+        })
+    } else setTimeout(this.fetchGraphData, 5000);
+
   }
 
   componentDidMount() {
@@ -294,7 +300,7 @@ class SampleGraph extends React.PureComponent {
     const dataScaffold = getDataScaffold(TrackerStore.modelIdx, TrackerStore.alternativeModelIdx,
       this.state.graphType, this.state.intervalType, TrackerStore.initialPUE,
       TrackerStore.hoveredState,
-      this.state.cumulative, this.state.sliderVal, gpuRescale)
+      this.state.cumulative, this.state.sliderVal, gpuRescale, TrackerStore.dataMode)
 
     return (
       <div>
@@ -354,7 +360,6 @@ class SampleGraph extends React.PureComponent {
             </Grid>
             <Grid item sm={1}>
             <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
-              {/* <HelpOutlineIcon /> */}
               <SettingsIcon onClick={this.handleClick('bottom-end')} />
             </IconButton>
             </Grid>

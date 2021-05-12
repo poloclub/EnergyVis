@@ -4,7 +4,6 @@ import HardwareItem from './HardwareItem'
 import HardwareAutoComplete from './HardwareAutoComplete'
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
-import TextField from '@material-ui/core/TextField';
 
 import { observer } from "mobx-react"
 import TrackerStore from '../../stores/TrackerStore'
@@ -42,28 +41,6 @@ class HardwareView extends React.PureComponent {
     }
 
     return (<div>
-      {/* <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
-        Your PUE Coefficient
-      </Typography>
-      <Divider variant="middle" />
-
-      <div style={{padding: '2.5%'}}>
-        <TextField
-          id="outlined-number"
-          label="Number"
-          type="number"
-          style={{width: '100%'}}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          variant="outlined"
-          value={TrackerStore.initialPUE}
-          onChange={(event) => {
-            if (event.target.value >= 0) TrackerStore.setPUE(event.target.value)
-          }}
-        />
-      </div> */}
-
       <Typography style={{paddingTop: '2%', paddingLeft: '16px'}} variant="h6" gutterBottom>
           Your Hardware
       </Typography>
@@ -94,7 +71,6 @@ class HardwareView extends React.PureComponent {
           quantity={gpuMap[component].alternative}
           original={gpuMap[component].original}
           updateQuantityHandler={(val) => {
-            // props.updateQuantityHandler("gpu", component, val)
             TrackerStore.updateHardware("gpu", component, val)
           }}
           />

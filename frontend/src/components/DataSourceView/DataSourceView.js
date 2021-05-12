@@ -1,10 +1,7 @@
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import HttpIcon from '@material-ui/icons/Http';
-import FindInPageIcon from '@material-ui/icons/FindInPage';
 import ToggleButton from '@material-ui/lab/ToggleButton';
-// import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import PublishIcon from '@material-ui/icons/Publish';
 import GetAppIcon from '@material-ui/icons/GetApp';
@@ -12,7 +9,6 @@ import LinkIcon from '@material-ui/icons/Link';
 
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import TextField from '@material-ui/core/TextField';
-import { MODEL_DATA } from '../../consts/consts'
 
 import { observer } from "mobx-react"
 import TrackerStore from '../../stores/TrackerStore'
@@ -29,17 +25,6 @@ const StyledToggleButtonGroup = withStyles((theme) => ({
     }
   }
 }))(ToggleButtonGroup);
-
-// const StyledToggleButton = withStyles((theme) => ({
-//   root: {
-//     '&$selected': {
-//       background: 'rgba(0, 0, 0, 0.12)',
-//       color: 'white',
-//       boxShadow: 'none',
-//     },
-//   }
-// }))(ToggleButton);
-
 
 const getButtonStyling = (idx, alternativeIdx, modelIdx) => {
   const styling = {
@@ -59,14 +44,11 @@ const getButtonStyling = (idx, alternativeIdx, modelIdx) => {
 class DataSourceView extends React.PureComponent {
 
   constructor(props) {
-    super(props)
-    this.state = {
-      view: 'loaded',
-    }
+    super(props);
   }
 
   handleChange(event, nextView) {
-    this.setState({ view: nextView })
+    TrackerStore.setTrackerMode(nextView)
   };
 
   render() {
@@ -78,14 +60,14 @@ class DataSourceView extends React.PureComponent {
         </Grid>
         <Grid xs={8} item style={{padding: '0px'}}>
 
-        {this.state.view != 'link' && <StyledToggleButtonGroup
+        {TrackerStore.dataMode != 'link' && <StyledToggleButtonGroup
           size="small"
           value={TrackerStore.modelIdx}
           exclusive
           onChange={(event, newPaper) => { TrackerStore.setModelSource(newPaper) }}
           aria-label="text alignment"
         >
-        {this.state.view != 'link' && TrackerStore.modelData.map((value, idx) => (
+        {TrackerStore.dataMode != 'link' && TrackerStore.modelData.map((value, idx) => (
 
           <ToggleButton style={getButtonStyling(idx, TrackerStore.alternativeModelIdx, TrackerStore.modelIdx)}
               onContextMenu={(e) => {
@@ -105,7 +87,7 @@ class DataSourceView extends React.PureComponent {
         ))}
         </StyledToggleButtonGroup> }
 
-        { this.state.view == 'link' &&
+        { TrackerStore.dataMode == 'link' &&
           <Grid container>
             <Grid item style={{marginRight: '8px', marginTop: '8px', marginLeft: '8px'}} xs={7}>
               <TextField
@@ -128,7 +110,7 @@ class DataSourceView extends React.PureComponent {
           </Grid>
         }
 
-        { this.state.view != 'link' &&
+        { TrackerStore.dataMode != 'link' &&
           <div style={{display: 'inline'}}>
             <input
               accept=".json"
@@ -161,7 +143,7 @@ class DataSourceView extends React.PureComponent {
         </Grid>
 
         <Grid item>
-          <ToggleButtonGroup style={{backgroundColor: 'white'}} value={this.state.view} exclusive onChange={this.handleChange.bind(this)}>
+          <ToggleButtonGroup style={{backgroundColor: 'white'}} value={TrackerStore.dataMode} exclusive onChange={this.handleChange.bind(this)}>
             <ToggleButton value="link" aria-label="module">
               <LinkIcon />
             </ToggleButton>

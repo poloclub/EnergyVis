@@ -5,20 +5,11 @@ import FormLabel from '@material-ui/core/FormLabel';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import Grid from '@material-ui/core/Grid';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import IconButton from '@material-ui/core/IconButton';
 import NRELData from '../../NRELData.json'
 
 import { observer } from "mobx-react"
 import { reaction } from "mobx"
 import TrackerStore from '../../stores/TrackerStore'
-import { SERVER_URI, MODEL_DATA } from '../../consts/consts'
-
-let avg = 0;
-for (var state in NRELData) {
-  avg += NRELData[state]["co2_lb_kwh"]
-}
-avg /= Object.keys(NRELData).length
 
 @observer
 class USMap extends React.PureComponent {
@@ -32,7 +23,8 @@ class USMap extends React.PureComponent {
       .remove();
 
     var width = document.getElementById("energymap").offsetWidth;
-    var height = 400;
+    
+    var height = 400
 
     var lowColor = '#f9f9f9'
     var highColor = '#298A48'
@@ -42,8 +34,8 @@ class USMap extends React.PureComponent {
 
     // D3 Projection
     var projection = d3.geoAlbersUsa()
-      .translate([width / 2 + 50, height / 2]) // translate to center of screen
-      .scale([width]); // scale things down so see entire US
+      .translate([width / 2 + 50, height / 2 - 10]) // translate to center of screen
+      .scale([width / 1.2]); // scale things down so see entire US
 
     // Define path generator
     var path = d3.geoPath() // path generator that will convert GeoJSON to SVG paths
@@ -367,11 +359,6 @@ class USMap extends React.PureComponent {
             Your Region's Energy Intensity <span style={{fontSize: '.9rem', fontWeight: '400'}}>(Lower is Better)</span>
           </Typography>
         </Grid>
-        {/* <Grid item sm={6}>
-        <IconButton style={{float: "right", paddingRight: "16px"}} color="primary" component="span">
-          <HelpOutlineIcon />
-        </IconButton>
-        </Grid> */}
       </Grid>
       <Divider variant="middle" />
       <Grid style={{paddingTop: '1%'}} container>
