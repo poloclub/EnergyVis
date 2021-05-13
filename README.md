@@ -2,6 +2,7 @@
 
 A tool for interactively tracking and exploring energy consumption for ML models
 
+[![build](https://github.com/poloclub/EnergyVis/workflows/build/badge.svg)](https://github.com/poloclub/EnergyVis/actions)
 [![arxiv badge](https://img.shields.io/badge/arXiv-2103.16435-red)](https://arxiv.org/abs/2103.16435)
 
 <a href="https://youtu.be/QuVsnS9p1Qc" target="_blank"><img src="https://i.imgur.com/gqqnF3d.png" style="max-width:100%;"></a>
